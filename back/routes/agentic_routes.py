@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from controllers.agentic import qa_controller
+from controllers.agentic import qa_controller, rdb2rdf_controller
 from constants import TXT_TEN_DASHES, TAG_AGENTIC
 from utils import console_log, info
 
 router = APIRouter()
-linha = len(TXT_TEN_DASHES + " DATASET ROUTES " + TXT_TEN_DASHES)
+# linha = len(TXT_TEN_DASHES + " DATASET ROUTES " + TXT_TEN_DASHES)
 console = lambda x: console_log("AGENTIC ROUTES", x)
 
 
@@ -25,3 +25,12 @@ async def answer_a_user_question(user_question: str):
    print(console('answer_a_user_question()'))  
    info('user question', user_question)
    return await qa_controller.answer_a_user_question(user_question)
+
+
+
+@router.get("/agentic/rdb2rdf/", 
+   tags=[TAG_AGENTIC], 
+   description="Route to transform RDF to RDF")
+async def transform_rdf_to_rdf():  
+   print(console('transform_rdf_to_rdf()'))  
+   return await rdb2rdf_controller.transform_rdf_to_rdf()
