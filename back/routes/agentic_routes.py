@@ -1,0 +1,27 @@
+from fastapi import APIRouter
+from controllers.agentic import qa_controller
+from constants import TXT_TEN_DASHES, TAG_AGENTIC
+from utils import console_log, info
+
+router = APIRouter()
+linha = len(TXT_TEN_DASHES + " DATASET ROUTES " + TXT_TEN_DASHES)
+console = lambda x: console_log("AGENTIC ROUTES", x)
+
+
+# @router.post("/schema-assistent/", 
+#    tags=[TAG_LLM], 
+#    description="Routes used to call the schema assistent agent.")
+# async def call_schema_assistent(question:str, headers: Annotated[HeadersModel, Header()]):  
+#    print(console('call_schema_assistent()'))  
+#    return organization_controller.call_schema_assistent(data, headers.repository, headers.language)
+
+
+
+@router.get("/agentic/qa/", 
+   tags=[TAG_AGENTIC], 
+   description="Route to answer a user's questions")
+# async def make_a_question(data: QuestionModel , headers: Annotated[HeadersModel, Header()]):  
+async def answer_a_user_question(user_question: str):  
+   print(console('answer_a_user_question()'))  
+   info('user question', user_question)
+   return await qa_controller.answer_a_user_question(user_question)

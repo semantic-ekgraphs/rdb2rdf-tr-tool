@@ -1,0 +1,13 @@
+.topbar{
+  /* background-color: var(--color-gray-300); */
+  /* height: 5rem; 80px */
+  /* width: 2rem auto; */
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* align-items: center; */
+  /* color: var(--color-white); */
+}
+.app {
+  text-decoration: none;
+  color: white;
+}

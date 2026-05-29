@@ -1,0 +1,94 @@
+.venv
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+
+# Virtual environment
+.venv/
+env/
+.env
+.env/
+venv/
+
+back/.venv/
+back/.env
+front/.env
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.bak
+*~
+.DS_Store # macOS
+Thumbs.db # Windows
+
+# Logs and temporary files
+*.log
+*.tmp
+temp/
+logs/
+
+# Database files (if applicable)
+*.sqlite3
+*.db
+
+# Configuration files with sensitive information
+# Consider adding specific configuration files if they contain sensitive data and are not meant for version control.
+# For example:
+# config.ini
+# .env
+
+# Build artifacts
+dist/
+build/
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+.architect
+bootstrap.css
+bootstrap.js
+bootstrap.json
+bootstrap.jsonp
+build/
+classic.json
+classic.jsonp
+ext/
+modern.json
+modern.jsonp
+resources/sass/.sass-cache/
+resources/.arch-internal-preview.css
+.arch-internal-preview.css
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+backend/app/.env
+frontend/.env
+.env
+*.bat
