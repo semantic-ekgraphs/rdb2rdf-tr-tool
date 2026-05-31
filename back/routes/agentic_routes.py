@@ -17,20 +17,20 @@ console = lambda x: console_log("AGENTIC ROUTES", x)
 
 
 
-@router.get("/agentic/qa/", 
-   tags=[TAG_AGENTIC], 
-   description="Route to answer a user's questions")
+@router.get("/agentic/trp_qa/", 
+   tags=[TAG_AGENTIC],
+   description="Route to answer a user's questions about TRs patterns")
 # async def make_a_question(data: QuestionModel , headers: Annotated[HeadersModel, Header()]):  
-async def answer_a_user_question(user_question: str):  
-   print(console('answer_a_user_question()'))  
+async def answer_tr_patterns_question(user_question: str):  
+   print(console('answer_tr_patterns_question()'))  
    info('user question', user_question)
-   return await qa_controller.answer_a_user_question(user_question)
+   return await qa_controller.answer_tr_patterns_question(user_question)
 
 
 
-@router.get("/agentic/rdb2rdf/", 
+@router.get("/agentic/r2rml2tr/", 
    tags=[TAG_AGENTIC], 
-   description="Route to transform RDF to RDF")
-async def transform_rdf_to_rdf():  
-   print(console('transform_rdf_to_rdf()'))  
-   return await rdb2rdf_controller.transform_rdf_to_rdf()
+   description="Route to transform R2RML mappings to RDF Tranformation Rules")
+async def transform_r2rml_to_transformation_rules():  
+   print(console('transform_r2rml_to_transformation_rules()'))  
+   return await rdb2rdf_controller.transform_r2rml_to_transformation_rules()

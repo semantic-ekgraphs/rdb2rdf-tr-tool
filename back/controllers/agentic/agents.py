@@ -1,4 +1,8 @@
+# from crewai_tools import DirectoryReadTool, FileReadTool
+# from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
+# from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
 from crewai import Agent, Task
+from models.task_output import TriplesMapAnalysis
 from llms import llama3_groq
 
 
@@ -10,7 +14,7 @@ r2rml_to_tr_agent = Agent(
    goal=(
       "Automatically generate formal Transformation Rules (TRs) from R2RML mappings files "
       "according to the framework following the 'transformation_rules_patterns_knowledge' "
-      "in our knowledge_source. Ensure each generated rule is grounded in the "
+      "in our knowledge_sources. Ensure each generated rule is grounded in the "
       "relational schema, preserves mapping semantics, and satisfies entity-preserving "
       "assumptions whenever possible."
    ),
@@ -27,7 +31,6 @@ r2rml_to_tr_agent = Agent(
       "collaborative human-in-the-loop validation to resolve complex modeling ambiguities before "
       "committing to a final, compilable semantic architecture."
     ),
-   # knowledge_sources=[transformation_rules_patterns_knowledge],  # Agent-specific knowledge
    llm=llama3_groq,
    # tools=[ask_human_validation],
    verbose=True,
@@ -36,8 +39,6 @@ r2rml_to_tr_agent = Agent(
 # ==========================================
 # 4. CONFIGURAÇÃO DAS TAREFAS (Com dependência sequencial)
 # ==========================================
-
-# Contexto/Inputs que o Agent receberá na execução do Crew
 inputs_description = """
 - R2RML Mapping File: {r2rml_mapping}
 """
@@ -55,6 +56,7 @@ task_parsing_and_pivoting = Task(
       "A preliminary list of each TriplesMap containing: names, extracted logical tables/SQL joins, "
       "and identified pivot relations with technical justifications."
    ),
+   output_json=TriplesMapAnalysis,
    agent=r2rml_to_tr_agent
 )
 
@@ -65,26 +67,58 @@ task_parsing_and_pivoting = Task(
 #################################
 
 
+
+
+
+
+
+
+
+
+
+
+
 #################################
-### ANSWER TEAM
+### QUESTION & ANSWER TEAM
 #################################
-generic_answer_agent = Agent(
-   role="Oráculo que responde perguntas de qualquer tipo",
-   goal="Responder perguntas de usuários",
-   backstory="""Tem mais de 1000 anos experiência em resposta a perguntas simples e complexas 
-   em todas as áreas do conhecimento.""",
-   verbose=True,
+answer_task_inputs_description = """
+- Transformaion Rules Patterns File: {tr_patterns_file}
+"""
+tr_patterns_agent = Agent( 
+   role="Analyst and expert in Transformation Rules Patterns", 
+   goal="Answer questions about transformation rule patterns (TRs) using the provided transformation rule patterns file.", 
+   backstory="""You have decades of experience in transformation rule patterns and 
+      know everything about mappings between relational databases and ontology.""", 
+   verbose=True, 
    llm=llama3_groq
 )
-answer_task = Task(
-   description="""
-      Responder a pergunta "{user_question}"
+answer_task = Task( 
+   description=""" 
+   Answer the question "{user_question} using only the provided Transformaion Rules Patterns File" 
+   f"Inputs context:\n{answer_task_inputs_description}" 
+   """, 
+   expected_output=""" 
+   - A sentence that should not exceed 50 words. 
    """,
-   expected_output="""
-      - Uma frase em italiano
-      - Essa frase deve ter 20 palavras
-      - Essa frase não deve ter mais que 20 palavras e não deve ter menos que 20 palavras
-      - Desconsidere vírgulas e pontos finais das contagem das palavras
-   """,
-   agent=generic_answer_agent,
+   agent=tr_patterns_agent,
 )
+
+# tr_patterns_agent = Agent(
+#    role="Oráculo que responde perguntas sobre os Transformation Rules Patterns (TRs)",
+#    goal="Responder perguntas sobre os Transformation Rules Patterns (TRs) using only its 'knolwedge_sources'",
+#    backstory="""You expert in Transformation Rules Patterns (TRs) 
+#       that know everything about Transformation Rules Patterns (TRs) included in 'knolwedge_sources' 
+#       into its owner Crew.""",
+#    verbose=True,
+#    llm=llama3_groq
+# )
+# answer_task = Task(
+#    description="""
+#       Responder a pergunta "{user_question} using only its 'knolwedge_sources'"
+#       f"Inputs context:\n{answer_task_inputs_description}"
+#    """,
+#    expected_output="""
+#       - Uma frase que não deve ter mais que 50 palavras.
+#    """,
+#    agent=tr_patterns_agent,
+# )

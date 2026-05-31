@@ -1,6 +1,27 @@
+from pathlib import Path
 from crewai import Crew
-from .agents import generic_answer_agent, r2rml_to_tr_agent
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+from .agents import tr_patterns_agent, r2rml_to_tr_agent
 from .agents import answer_task, task_parsing_and_pivoting
+
+import os
+from dotenv import load_dotenv
+from crewai import LLM 
+
+load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+
+### ==========================================
+### KNOWLEDGE BASE
+### ==========================================
+transformation_rules_patterns: str
+path_knowledge_tr_patterns = Path(__file__).parent / "../../knowledge/tr_patterns.txt"
+# Create a knowledge source
+with open(path_knowledge_tr_patterns, "r", encoding="utf-8") as file:
+   tr_patterns_content = file.read()
+   transformation_rules_patterns = StringKnowledgeSource(content=tr_patterns_content)
+   print(f'tr_patterns: {transformation_rules_patterns}')
 
 #################################
 ### TRANSFORMATION RULES TEAM
@@ -12,7 +33,15 @@ transformation_rules_team = Crew(
    tasks=[
       task_parsing_and_pivoting
    ],
-	process='sequential'
+	process='sequential',
+   knowledge_sources=[transformation_rules_patterns], # Enable knowledge by adding the sources here
+   embedder={
+      "provider": "ollama",
+      "config": {
+         "api_key": GROQ_API_KEY,
+         "model": "llama-3.3-70b-versatile",
+      }
+   },
 )
 
 #################################
@@ -25,10 +54,18 @@ transformation_rules_team = Crew(
 #################################
 answer_team = Crew(
 	agents=[
-      generic_answer_agent
+      tr_patterns_agent
    ],
    tasks=[
       answer_task
    ],
-	process='sequential'
+	process='sequential',
+   # knowledge_sources=[transformation_rules_patterns], # Enable knowledge by adding the sources here
+   # embedder={
+   #    "provider": "ollama",
+   #    "config": {
+   #       "api_key": GROQ_API_KEY,
+   #       "model": "llama-3.3-70b-versatile",
+   #    }
+   # },
 )
