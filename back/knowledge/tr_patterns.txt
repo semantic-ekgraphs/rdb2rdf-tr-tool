@@ -29,11 +29,6 @@ The operator Relations(·) applied to φ
 returns the set of all relation schemes occurring along the path. 
 Formally, Relations(φ) = {R1, R2, . . . , Rn}. 
 
-
-
-
-
-
 TRANSFORMATION RULES PATTERNS 
 Class Transformation Rule (CTR)
 A Class Transformation Rule associated with class C has the form:
@@ -46,6 +41,7 @@ s is the URI generated for tuple r;
 URI_C​(r,s) generates the URI of the RDF resource corresponding to r;
 δ(r) is an optional selection predicate over tuples of R.
 The relation R is called the pivot relation of the rule, and tuples of R are called pivot tuples. Distinct pivot tuples must generate distinct RDF resources.
+
 Object Type Transformation Rule (OTR)
 
 ψ: P(s, o) ← RD(d), BD[d,s], RG(g), BG[g, o], φ(d, g)

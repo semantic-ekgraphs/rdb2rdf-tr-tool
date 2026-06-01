@@ -17,10 +17,9 @@ console = lambda x: console_log("AGENTIC ROUTES", x)
 
 
 
-@router.get("/agentic/trp_qa/", 
+@router.get("/agentic/tr_patterns_qa/", 
    tags=[TAG_AGENTIC],
    description="Route to answer a user's questions about TRs patterns")
-# async def make_a_question(data: QuestionModel , headers: Annotated[HeadersModel, Header()]):  
 async def answer_tr_patterns_question(user_question: str):  
    print(console('answer_tr_patterns_question()'))  
    info('user question', user_question)

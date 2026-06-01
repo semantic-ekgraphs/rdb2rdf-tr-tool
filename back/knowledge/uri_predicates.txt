@@ -1,0 +1,36 @@
+------------------------------------------------------------
+GLOBAL URI PREDICATES — B predicates
+------------------------------------------------------------
+
+URI_artist(a,x) :=
+hasURI("http://musicbrainz.org/artist/", a.gid, x)
+
+URI_area(ar,x) :=
+hasURI("http://musicbrainz.org/area/", ar.gid, x)
+
+URI_label(l,x) :=
+hasURI("http://musicbrainz.org/label/", l.gid, x)
+
+URI_medium(m,x) :=
+hasURI("http://musicbrainz.org/record/", m.id, x)
+
+URI_place(p,x) :=
+hasURI("http://musicbrainz.org/place/", p.gid, x)
+
+URI_recording(r,x) :=
+hasURI("http://musicbrainz.org/recording/", r.gid, x)
+
+URI_release(r,x) :=
+hasURI("http://musicbrainz.org/release/", r.gid, x)
+
+URI_releaseGroup(rg,x) :=
+hasURI("http://musicbrainz.org/release-group/", rg.gid, x)
+
+URI_signalGroup(rg,x) :=
+hasURI("http://musicbrainz.org/signal-group/", rg.gid, x)
+
+URI_track(t,x) :=
+hasURI("http://musicbrainz.org/track/", t.id, x)
+
+URI_tag(tg,x) :=
+hasURI("http://musicbrainz.org/tag/", tg.name, x)

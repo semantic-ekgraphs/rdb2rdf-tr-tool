@@ -5,19 +5,27 @@ from utils import filter_by_language, console_log, print_json_idented, info
 from .workflow import transformation_rules_team
 
 console = lambda x: console_log("AGENTIC CONTROLLER", x)
-path_temp_r2rml = Path(__file__).parent / "../../temp/mbz_r2rml.ttl"
-path_temp_parsing = Path(__file__).parent / "../../temp/parsing.md"
-path_temp_parsing_json = Path(__file__).parent / "../../temp/parsing.json"
+r2rml_file =        Path(__file__).parent / "../../temp/mbz_r2rml.ttl"
+parsing_md_file =   Path(__file__).parent / "../../temp/parsing.md"
+parsing_json_file = Path(__file__).parent / "../../temp/parsing.json"
 
 async def transform_r2rml_to_transformation_rules() -> str:
    print(console('transform_rdf_to_rdf()'))
-   with open(path_temp_r2rml, "r") as file:
+
+   ### PASS THE R2RML FILE TO THE INPUT AS CONTEXT
+   with open(r2rml_file, "r") as file:
       r2rml_content = file.read()
       inputs = {
-         'r2rml_mapping': r2rml_content,
+         'r2rml_mapping': r2rml_content, # This key must be the same in input_description in the Task
       }
+
+      ### CALL THE CREW
       answer = transformation_rules_team.kickoff(inputs)
-      with open(path_temp_parsing_json, "w", encoding="utf-8") as file:
+
+      # print(f'answer: {answer}')
+
+      ### SAVE THE ANSWER AS JSON IN THE \TEMP FOLDER 
+      with open(parsing_json_file, "w", encoding="utf-8") as file:
          file.write(answer.raw)
+         # file.write(answer.model_dump())
          return answer
-      # return "transform_r2rml_to_transformation_rules"
