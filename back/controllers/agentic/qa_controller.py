@@ -8,7 +8,7 @@ console = lambda x: console_log("AGENTIC CONTROLLER", x)
 tr_patterns_file = Path(__file__).parent / "../../knowledge/tr_patterns.txt"
 
 
-async def answer_tr_patterns_question(user_question:str) -> str:
+async def answer_transformation_rules_patterns_question(user_question:str) -> str:
    print(console('answer_a_user_question()'))
    with open(tr_patterns_file, "r", encoding="utf-8") as file:
       tr_patterns_content = file.read()

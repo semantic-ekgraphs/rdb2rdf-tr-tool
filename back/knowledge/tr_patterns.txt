@@ -34,7 +34,7 @@ Class Transformation Rule (CTR)
 A Class Transformation Rule associated with class C has the form:
 ψ: C(s)←R(r), URI_C​(r,s), δ(r)
 where:
-ψ is the name of the transformation rule;
+ψ is the identifier of the transformation rule;
 R is a relation scheme or virtual table in the source schema S;
 r is a tuple variable ranging over tuples of R;
 s is the URI generated for tuple r;
@@ -46,7 +46,7 @@ Object Type Transformation Rule (OTR)
 
 ψ: P(s, o) ← RD(d), BD[d,s], RG(g), BG[g, o], φ(d, g)
 where:
-- ψ is the name of the OTR.
+- ψ is the identifier of the OTR.
 - P is an object property in V with domain D and range G. 
 - “RD(d), BD[d,s]” is the RHS of the CTR ψD that matches class D with pivot relation RD of ψD.
 - “RG(g), BG[g, o]” is the RHS of the CTR ψG that matches class G with pivot relation RG ψG.
@@ -58,7 +58,7 @@ Data Type Transformation Rule (DTR)
 Local-DTR (the attributes are from the pivot relation) 
 ψ: P(s, v) ← RD(r), BD[r, s], nonNull(g.A1), . . . ,nonNull(g. Ak), RDFLiteral(g.A1, "A1", "G", v1), . . . , RDFLiteral(g.Ak, "Ak", "G", vk), T([v1, . . . , vk], v),
  where
-- ψ is the name of the DTR.
+- ψ is the identifier of the DTR.
 - P is a datatype property in V with domain D. 
 - “RD(r), BD[r, x]” is the right-hand side for the CTR that matches class D with pivot relation RD. 
 - A1, . . . , Ak are attributes of RD. 
@@ -67,7 +67,7 @@ Local-DTR (the attributes are from the pivot relation)
 Path-DTR (the attributes are from a related relation) 
 ψ: P(s, v) ← RD(r), BD[r, s], RG(g), nonNull(g.A1), . . . ,nonNull(g. Ak), RDFLiteral(g.A1, "A1", "G", v1), . . . , RDFLiteral(g.Ak, "Ak", "G", vk), T([v1, . . . , vk], v), φ(r, g)
  where
-- ψ is the name of the DTR.
+- ψ is the identifier of the DTR.
 - P is a datatype property in V with domain D. 
 - “RD(r), BD[s, x]” is the right-hand side for the CTR that matches class D with pivot relation RD. 
 - φ  is an optional path from RD to relation RG.  

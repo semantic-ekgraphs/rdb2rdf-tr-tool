@@ -8,22 +8,13 @@ router = APIRouter()
 console = lambda x: console_log("AGENTIC ROUTES", x)
 
 
-# @router.post("/schema-assistent/", 
-#    tags=[TAG_LLM], 
-#    description="Routes used to call the schema assistent agent.")
-# async def call_schema_assistent(question:str, headers: Annotated[HeadersModel, Header()]):  
-#    print(console('call_schema_assistent()'))  
-#    return organization_controller.call_schema_assistent(data, headers.repository, headers.language)
-
-
-
 @router.get("/agentic/tr_patterns_qa/", 
    tags=[TAG_AGENTIC],
    description="Route to answer a user's questions about TRs patterns")
-async def answer_tr_patterns_question(user_question: str):  
+async def answer_trasnformation_rules_patterns_question(user_question: str):  
    print(console('answer_tr_patterns_question()'))  
    info('user question', user_question)
-   return await qa_controller.answer_tr_patterns_question(user_question)
+   return await qa_controller.answer_transformation_rules_patterns_question(user_question)
 
 
 
@@ -33,3 +24,27 @@ async def answer_tr_patterns_question(user_question: str):
 async def transform_r2rml_to_transformation_rules():  
    print(console('transform_r2rml_to_transformation_rules()'))  
    return await rdb2rdf_controller.transform_r2rml_to_transformation_rules()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @router.post("/schema-assistent/", 
+#    tags=[TAG_LLM], 
+#    description="Routes used to call the schema assistent agent.")
+# async def call_schema_assistent(question:str, headers: Annotated[HeadersModel, Header()]):  
+#    print(console('call_schema_assistent()'))  
+#    return organization_controller.call_schema_assistent(data, headers.repository, headers.language)

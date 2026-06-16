@@ -36,56 +36,45 @@ r2rml_to_tr_agent = Agent(
    verbose=True,
    # memory=True
 )
+
+
 # ==========================================
 # 4. CONFIGURAÇÃO DAS TAREFAS (Com dependência sequencial)
 # ==========================================
-inputs_description_of_parsing_and_pivoting_task = """
-- R2RML Mapping: {r2rml_mapping}
-"""
 
 # Tarefa 1: Parse, Grounding e Identificação de Pivô
 task_parsing_and_pivoting = Task(
    description="""
-      For each R2RML TriplesMap, write the TRANSFORMATION RULE in the framework formalism. 
-      Use the revised Transformation Rules Patternsand the examples in fourth attached file: Transformation Rules Patterns. 
-      The goal is not merely to syntactically translate R2RML mappings,
-      but to reconstruct the semantic structure of the RDF view in terms
-      of pivot entities, relational paths, datatype dependencies,
-      and object relationships.
-      Step 1 & 2: Parse the provided R2RML mapping and match all relations, attributes,
-      and foreign keys against the Relational Schema. Reject or flag any elements not present in the schema.
-      Step 3: Identify the pivot relation for each TriplesMap (the relation whose tuple determines
-      the subject URI and RDF resource identity). Mark join-derived subjects as derived-entity cases.
-      A mapping is object-preserving when:
-      - the subject URI is generated from a tuple of a base pivot relation;
-      - datatype values are obtained from attributes of the pivot tuple or related tuples;
-      - object values are URIs of entities generated from other pivot tuples;
-      - the mapping does not create new RDF resources that do not correspond to base relational tuples.
-      A CTR MUST generate only rdf:type assertions.
+      Consider the relational database schema provided within <rdb_schema>:
+      <rdb_schema>
+         {rdb_schema}
+      </rdb_schema>\n
+      Use the relational database schema to identify pivot relations, joins, foreign-key paths. 
 
-      A DTR MUST generate only datatype properties whose object is a literal.
+      Consider the R2RML mappings for the RDF view provided within <r2rml>:
+      <r2rml>
+         {r2rml_mapping}
+      </r2rml>
 
-      An OTR MUST generate only object properties whose object is an RDF resource URI.
-      OTR examples:
-      Ψ_artist_11:
-      foaf:made(s,o) ← artist(a), URI_artist(a,s), track(o), URI_track(t,o),
-      [ artist_credit_name_fk_artist,
-      artist_credit_name_fk_artist_credit,
-      release_group_fk_artist_credit](a, t)\n
-      Inputs context:\n
-      - R2RML Mapping:\n{r2rml_mapping}
-   """,
-   # expected_output=(
-   #    "A array of TriplesMapParsing from each TriplesMap containing: names, extracted logical tables/SQL joins, "
-   #    "and identified pivot relations with technical justifications."
-   # ),
+      Use the revised Transformation Rules Patterns and the examples in <trp>:\n 
+      <trp>
+         {tr_patterns}
+      </trp>
+Step 1 & 2: Parse the provided R2RML mapping and match all relations, attributes,
+and foreign keys against the Relational Schema. Reject or flag any elements not present in the schema.
+Step 3: Identify the pivot relation for each TriplesMap (the relation whose tuple determines
+the subject URI and RDF resource identity). Mark join-derived subjects as derived-entity cases.
+      """,
    expected_output=(
-      """A JSON with a list of 'triples_map_name'
+      """A JSON with a list of 'triples_map_name',
       'sql_logical_table',
       'pivot_relation',
-      'mapping_type',
-      'entity_preserving_classification', and
-      'tr_generated' fields"""
+      'entity_preserving', and
+      'generated_trs' fields. 
+      -Do not include or create any field, properties or items that are not in Pydantic models defined into output_json.
+      -If in the logical table or extracted SQL query does not have a WHERE clause, do not add true, false, or δ(r) to the end of the formula.
+      -Do not include the symbol ψ in the formula.
+      """
    ),
    output_json=TriplesMapParsingList,
    # output_pydantic=TransformationRulesList,
@@ -122,6 +111,7 @@ tr_patterns_agent = Agent(
    verbose=True, 
    llm=llama3_groq
 )
+
 answer_task = Task( 
    description=(
       "Answer the question '{user_question}' using only the provided Transformaion Rules Patterns content.\n"
@@ -133,6 +123,15 @@ answer_task = Task(
    """,
    agent=tr_patterns_agent
 )
+
+
+
+
+
+
+
+
+
 
 # tr_patterns_agent = Agent(
 #    role="Oráculo que responde perguntas sobre os Transformation Rules Patterns (TRs)",
@@ -153,3 +152,6 @@ answer_task = Task(
 #    """,
 #    agent=tr_patterns_agent,
 # )
+
+
+
