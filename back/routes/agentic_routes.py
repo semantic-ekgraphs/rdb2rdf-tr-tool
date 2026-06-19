@@ -8,7 +8,7 @@ router = APIRouter()
 console = lambda x: console_log("AGENTIC ROUTES", x)
 
 
-@router.get("/agentic/tr_patterns_qa/", 
+@router.get("/agentic/tr-patterns-qa/", 
    tags=[TAG_AGENTIC],
    description="Route to answer a user's questions about TRs patterns")
 async def answer_trasnformation_rules_patterns_question(user_question: str):  
@@ -18,13 +18,22 @@ async def answer_trasnformation_rules_patterns_question(user_question: str):
 
 
 
-@router.get("/agentic/r2rml2tr/", 
+@router.get("/agentic/r2rml-to-tr/", 
    tags=[TAG_AGENTIC], 
    description="Route to transform R2RML mappings to RDF Tranformation Rules")
 async def transform_r2rml_to_transformation_rules():  
    print(console('transform_r2rml_to_transformation_rules()'))  
    return await rdb2rdf_controller.transform_r2rml_to_transformation_rules()
 
+
+
+@router.get("/agentic/tr-to-trigger/", 
+   tags=[TAG_AGENTIC], 
+   description="Route to generate AFTER Trigger from RDF Tranformation Rules")
+async def generate_after_trigger_from_transformation_rules(relation:str):  
+   print(console('generate_after_trigger_from_transformation_rules()'))  
+   print(f'+ pivot relation: {relation}')
+   return await rdb2rdf_controller.generate_after_trigger_from_transformation_rules()
 
 
 

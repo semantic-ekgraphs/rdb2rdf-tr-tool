@@ -6,18 +6,18 @@ from pydantic import BaseModel, Field
 # ==========================================
 # Data structure of a Transformation Rule
 class TransformationRuleModel(BaseModel):
-   identifier:      str = Field(..., description="Identifier of the transformation rule using this template 'tr_<pivot relation>_<sequential number>'.")
-   tr_type:         str = Field(..., description="Transformation type: CTR, Local-DTR, Path-DTR, or OTR.")
-   formula:         str = Field(..., description="The final generated transformation rule (TR) formula.")
-   relational_path: str = Field(..., description="The relational path positioned as the last term in the rule body.")
+   name:      Optional[str] = Field(default=None, description="Name of the transformation rule using this template 'tr_<pivot_relation>_<sequential_number>'.")
+   tr_type:         Optional[str] = Field(default=None, description="Transformation type: CTR, Local-DTR, Path-DTR, OTR, or derived-pivot case.")
+   formula:         Optional[str] = Field(default=None, description="The formula of the transformation rule (TR) according to the transformation type.")
+   relational_path: Optional[str] = Field(default=None, description="The relational path positioned as the last term in the rule body.")
 
 # To parsing and pivotin a rr:TriplesMap
 class TriplesMapParsing(BaseModel):
-   triples_map_name:  str = Field(..., description="Name of the TriplesMap analyzed.")
-   sql_logical_table: str = Field(..., description="Logical table or extracted SQL query. SQL Source.")
-   pivot_relation:    str = Field(..., description="Identified pivot relation.")
-   entity_preserving: bool = Field(..., description="Classify if is Entity-preseving or Non-entity-preserving.")
-   generated_trs:     List[TransformationRuleModel] = Field(..., description="Gererated Transformation Rules")
+   triples_map_name:  Optional[str]  = Field(default=None, description="Name of the TriplesMap analyzed.")
+   logical_table:     Optional[str]  = Field(default=None, description="Logical table or extracted SQL query. SQL Source.")
+   pivot_relation:    Optional[str]  = Field(default=None, description="Identified pivot relation.")
+   entity_preserving: Optional[bool] = Field(default=None, description="Classify if is Entity-preseving or Non-entity-preserving.")
+   generated_trs:     Optional[List[TransformationRuleModel]] = Field(..., description="Gererated Transformation Rules")
 
 class TriplesMapParsingList(BaseModel):
    parsings: List[TriplesMapParsing]

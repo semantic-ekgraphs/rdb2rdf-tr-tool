@@ -1,9 +1,16 @@
 # from crewai_tools import DirectoryReadTool, FileReadTool
 # from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
 # from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
 from crewai import Agent, Task
-from models.task_output import TriplesMapParsingList
+from typing import List
+from models.task_output import TriplesMapParsing, TriplesMapParsingList
 from llms import llama3_groq
+
+from typing import List, Optional
+from pydantic import BaseModel, Field
+from crewai import Agent, Task, Crew, Process
+from crewai.tools import tool
 
 
 #################################
@@ -23,7 +30,7 @@ r2rml_to_tr_agent = Agent(
       "Ontological Engineering, and Relational-to-RDF mapping lifecycles, you treat mapping "
       "transformation not as a simple code-generation task, but as a rigorous deductive reasoning process. "
       "You possess a deep, dual understanding of both relational database internals (including complex "
-      "SQL joins and integrity constraints) and formal logic formalisms (CTR, DTR, Path-DTR, and OTR patterns). "
+      "SQL joins and integrity constraints) and formal logic formalisms (CTR, Local-DTR, Path-DTR, OTR, or derived-pivot case). "
       "Your approach is deeply methodical: you systematically isolate the true identity pivot of a resource, "
       "audit entity-preservation conditions, and gracefully design derived views as pseudo-pivots when "
       "structural anomalies or implicit associative entities are found. You believe in mathematical "
@@ -42,58 +49,69 @@ r2rml_to_tr_agent = Agent(
 # 4. CONFIGURAÇÃO DAS TAREFAS (Com dependência sequencial)
 # ==========================================
 
-# Tarefa 1: Parse, Grounding e Identificação de Pivô
+
 task_parsing_and_pivoting = Task(
    description="""
-      Consider the relational database schema provided within <rdb_schema>:
-      <rdb_schema>
-         {rdb_schema}
-      </rdb_schema>\n
-      Use the relational database schema to identify pivot relations, joins, foreign-key paths. 
-
       Consider the R2RML mappings for the RDF view provided within <r2rml>:
       <r2rml>
          {r2rml_mapping}
       </r2rml>
 
-      Use the revised Transformation Rules Patterns and the examples in <trp>:\n 
-      <trp>
+      Consider the revised Transformation Rules Patterns and the examples in <tr_patterns>:
+      <tr_patterns>
          {tr_patterns}
-      </trp>
-Step 1 & 2: Parse the provided R2RML mapping and match all relations, attributes,
-and foreign keys against the Relational Schema. Reject or flag any elements not present in the schema.
-Step 3: Identify the pivot relation for each TriplesMap (the relation whose tuple determines
-the subject URI and RDF resource identity). Mark join-derived subjects as derived-entity cases.
+      </tr_patterns>
+      
+      For each TriplesMap in the <r2rml> extracts:
+      - triples map name;
+      - logical table;
+      - pivot relation;
+      - entity preserving;
+      - name of transformation rule from each predicateObjectMap and from each subjectMap;
+      - trasnformation rule type;
+      - relational path
       """,
    expected_output=(
-      """A JSON with a list of 'triples_map_name',
-      'sql_logical_table',
-      'pivot_relation',
-      'entity_preserving', and
-      'generated_trs' fields. 
-      -Do not include or create any field, properties or items that are not in Pydantic models defined into output_json.
-      -If in the logical table or extracted SQL query does not have a WHERE clause, do not add true, false, or δ(r) to the end of the formula.
-      -Do not include the symbol ψ in the formula.
+      """A JSON document with the main key 'parsings', whose content be a list of the 
+      fields and its respective values as defined in the TriplesMapParsing model.
+      """
+   ),
+   output_pydantic=TriplesMapParsingList,
+   agent=r2rml_to_tr_agent
+)
+
+
+task_validation_of_generated_transformation_rules = Task(
+   description="""
+   For each item in the JSON document, check:
+   - every relation exists;
+   - every attribute exists;
+   - every FK path is valid;
+   - every subject URI has a pivot;
+   - DTRs produce literals;
+   - OTRs produce RDF resources;
+   - derived entities have stable pseudo-pivots;
+   - no R2RML semantics were lost.
+   """,
+   expected_output=(
+      """A JSON document with the main key 'parsings', whose content be a list of the 
+      fields and its respective values as defined in the TriplesMapParsing model, If all checks are met.
+      Otherwise, the checks that were not met.
       """
    ),
    output_json=TriplesMapParsingList,
-   # output_pydantic=TransformationRulesList,
+   context=[task_parsing_and_pivoting],
    agent=r2rml_to_tr_agent
 )
+
+
+
 
 
 
 #################################
 ### TRIGGERS TEAM
 #################################
-
-
-
-
-
-
-
-
 
 
 
@@ -154,4 +172,41 @@ answer_task = Task(
 # )
 
 
+# Tarefa 1: Parse, Grounding e Identificação de Pivô
+# Consider the relational database schema provided within <rdb_schema>:
+#       <rdb_schema>
+#          {rdb_schema}
+#       </rdb_schema>\n
+#       Use the relational database schema to identify pivot relations, joins, foreign-key paths. 
+
+# - logical table;
+#       - SQL query;
+#       - subject map;
+#       - predicate-object maps;
+#       - URI templates;
+#       - columns;
+#       - joins;
+#       - transformations such as LOWER, REPLACE, LIKE, etc.
+# 'sql_logical_table',
+#       'pivot_relation',
+#       'entity_preserving', and
+#       'generated_trs' fields.
+# Step 2 — Schema Grounding — Parse the provided R2RML mapping and 
+#          matches all relations, attributes, keys, and foreign keys against the relational schema. 
+#          It must reject or flag any rule that uses relations or attributes not present in the schema.
+#          Put the class from in rr:class as class in the CTR formula.
+#          Using property from rr:predicateObjectMap in the DTR and OTR formula.
+#       Step 3 — Pivot Relation Identification — identify the pivot relation for each TriplesMap: 
+#          The pivot relation as the relation whose tuple determines the subject URI and 
+#          the identity of the RDF resource.
+#          Mark join-derived subjects as derived-entity cases.
+#       Guardrails:
+#       - Do not use the Artist class, anywhere, use mo:MusicalArtist.
+#       - Use only classes within the provided R2RML mapping <r2rml>. 
+#       - Never invent or infer any other classes out of r2rml mapping.
+#       - Do not include or create any field, properties or items that are not in Pydantic models defined into output_json.
+#       - Do not add 'true', 'false', or 'δ(r)' in the last element of CTR formula.
+#       - Do not include the symbol ψ in the formula.
+#       - Generate transformation rules for all rr:predicateObjectMap.
+# Aprimorando a análise e a pivotagem de tarefas. Evite usar o símbolo \Psi na fórmula e evite colocar "true" ou "false" no final da fórmula quando não houver uma cláusula WHERE na consulta SQL.
 
