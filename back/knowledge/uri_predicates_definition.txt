@@ -1,0 +1,30 @@
+Generalized Definition of URI Predicates
+The predicate URI_R(r,s) associates a pivot tuple r in relation R, with the URI s of the RDF resource 
+representing the corresponding instance of class C.  
+We generalize the definition of URI predicates as follows:
+   - URI_R(r,s) ≡ B(r, x̄); hasURI(PC, <v1,...,vn>, s)
+where:
+- B(r,x̄) is a body written using the same syntax and semantics as the body of a OTR Transformation Rule;
+- r is a tuple of the pivot relation R;
+- x̄ denotes the auxiliary tuple variables introduced in B;
+- v1,...,vn are attribute values obtained from the variables occurring in B;
+- hasURI constructs the URI by concatenating the namespace prefix PC with the ordered list of values <v1,...,vn>.
+The predicate hasURI itself remains unchanged. The body B is responsible for retrieving the attribute values that compose the URI, while hasURI simply constructs the URI from these values.
+Since the body B uses exactly the same language already adopted for Object type Transformation Rules, no additional navigation mechanism or auxiliary formalism is required. URI components may therefore be obtained either directly from the pivot tuple or from tuples reached through relational predicates and path predicates already defined by the TR formalism.
+To preserve the entity-preserving property, the definition of URI_C must satisfy the following condition:
+The predicate URI_R must establish a one-to-one correspondence between tuples of the pivot relation and RDF resources representing instances of class C.
+
+Example 1
+The URI associated with an company is obtained directly from the pivot tuple.
+URI_company(c,s) ≡ hasURI("http://example.org/company/", <c.gid>, s)
+
+Example 2
+The URI associated with the pivot relation company_tag is defined as follows:
+   URI_company_tag(ct,s) ≡
+      company(c), tag(t),
+      [company_tag_fk_company](ct, c), [company_tag_fk_tag](ct, t);
+      hasURI("http://example.org/tag/", <c.gid, t.name, s).
+      
+In this example, the URI components are not attributes of the pivot tuple itself. 
+Instead, they are obtained from tuples reached through foreign-key paths. 
+Nevertheless, the identity of the RDF resource remains determined by the pivot tuple, thereby preserving the entity-preserving semantics of the transformation rule.

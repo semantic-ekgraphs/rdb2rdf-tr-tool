@@ -1,0 +1,13 @@
+Object-preserving R2RML Mappings
+
+An R2RML mapping is object-preserving when each RDF resource representing an instance of a class corresponds to exactly one tuple of a designated relation in the source schema, called the pivot relation, and each pivot tuple generates at most one RDF resource. In other words, the mapping preserves the identity of relational entities in the RDF view.
+
+This interpretation is particularly natural in the context of schema mappings between relational databases and RDF. The purpose of such mappings is to establish semantic correspondences between constructs of the relational schema and constructs of the RDF vocabulary
+ - entity relations are mapped to RDF classes;
+ - relationships are mapped to object properties;
+ - attributes are mapped to datatype properties.
+
+Consequently, the mapping is expected to preserve the identity of the entities already represented in the relational schema, rather than creating new entities through aggregation, grouping, or other analytical transformations. Each RDF instance therefore represents an existing relational entity, identified by a single pivot tuple, even when some of the values required to construct its URI are obtained from related tuples.
+
+Although the R2RML language allows arbitrary SQL queries in logical tables, including queries involving GROUP BY, DISTINCT, UNION, or aggregation, such mappings generally define derived analytical views rather than semantic correspondences between relational entities and RDF classes. Therefore, while such mappings are valid R2RML specifications, they fall outside the scope of entity-preserving RDB2RDF mappings, which are the focus of the proposed framework.
+For this reason, the transformation-rule formalism adopted in this work deliberately assumes object-preserving mappings. This assumption establishes a one-to-one correspondence between pivot tuples and RDF resources, which is the fundamental property on which the incremental maintenance theory and its correctness proofs are built.

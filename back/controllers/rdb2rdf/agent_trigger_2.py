@@ -50,6 +50,9 @@ def validate_statement_trigger_syntax(sql_code: str) -> str:
 # =====================================================================
 # 3. CRIAÇÃO DO AGENTE ESPECIALIZADO
 # =====================================================================
+from crewai_tools import FileReadTool
+# Initialize the tool with a specific file path, so the agent can only read the content of the specified file
+file_read_tool = FileReadTool(file_path='.IVM_abril_21__Current_version_ (9).pdf')
 
 ivm_trigger_compiler_agent = Agent(
    role="Principal Database Systems Compiler specializing in RDB2RDF Incremental View Maintenance",
@@ -68,7 +71,7 @@ ivm_trigger_compiler_agent = Agent(
       "mathematical rigor, translating abstract graph updates into highly-performant relational queries."
    ),
    llm=llama3_groq,
-   tools=[validate_statement_trigger_syntax],
+   tools=[file_read_tool, validate_statement_trigger_syntax],
    verbose=True,
    memory=True
 )

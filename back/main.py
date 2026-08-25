@@ -1,9 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import agentic_routes
+from routes import qa_routes
+from routes import rdb2rdf_routes, r2rml_to_tr_routes
+
 
 app = FastAPI()
-app.include_router(agentic_routes.router)
+app.include_router(qa_routes.router)
+app.include_router(rdb2rdf_routes.router)
+app.include_router(r2rml_to_tr_routes.router)
+
+@app.get("/", tags=["Index"])
+def route_index():
+	return {"message": "Hello World! I'm RDB2RDF Incremental View Maintenance Tool!!"}
 
 origins = [
 	"http://localhost:3002",
@@ -21,7 +29,3 @@ app.add_middleware(
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
-
-@app.get("/", tags=["Root"])
-def read_root():
-	return {"message": "Hello World, I'm RDB2RDF Tool!!"}

@@ -1,10 +1,16 @@
 import os
+from datetime import datetime
 import shutil
 import platform
 platform.system()
+from pathlib import Path
 import pandas as pd
 import json
 import csv
+from typing import List
+from pydantic import BaseModel, Field
+from models.task_output import TriplesMapParsingList
+from controllers.r2rml_to_tr.model import TriplesMapParsing
 from fastapi import UploadFile
 from constants import TXT_TEN_DASHES
 # from pydantic. import Optional
@@ -28,6 +34,70 @@ TypeOfFilesNotAllowedForImport = {
 	"image/svg+xml": ".svg",
 	"application/vnd.openxmlformats-officedocument.presentationml.presentation": ".ppt"
 }
+
+
+
+##################### 
+### TASK INPUT READS
+##################### 
+def read_csv_and_transform_in_input_to_task(csv_path:Path, separator:str=";") -> str: 
+	csv_content = ""
+	csv_as_df = pd.read_csv(csv_path, sep=separator)
+	for row in csv_as_df.to_string():
+		csv_content += str(row)
+	return csv_content
+
+def read_txt_file(path_file:Path):
+	with open(path_file, "r", encoding="utf-8") as file:
+		return file.read()
+
+def write_json_after_trigger_output_file(path_file:Path, content):
+	with open(path_file, "w", encoding="utf-8") as file_of_trigger:
+		file_of_trigger.write(content)
+
+
+def write_csv_from_pydantic_(path_file:Path, content):
+	with open(path_file, "w", encoding="utf-8") as csv_file:
+		csv_file.write(content)
+
+# 2. Função para exportar uma lista de modelos Pydantic para CSV
+def export_pydantic_to_csv(caminho_arquivo: str, dados: List):
+	if not dados:
+		return
+
+	
+	# Extrai os nomes das colunas a partir do modelo Pydantic
+	fieldnames = list(dados[0].model_fields.keys())
+	
+	with open(caminho_arquivo, mode="w", newline="", encoding="utf-8") as f:
+		writer = csv.DictWriter(f, fieldnames=fieldnames)
+		
+		# Escreve o cabeçalho
+		writer.writeheader()
+		
+		# Escreve os dados serializados
+		for item in dados:
+			writer.writerow(item.model_dump())
+
+def cut_json_struture(dict_data):
+	new_dict = {}
+	for key, value_of_key in dict_data.items():
+		new_dict[key] = {"description": value_of_key["description"]}
+	return new_dict
+
+
+def get_descriptions_of_a_pydantic_model(dict_model):
+	new_dict = ""
+	for key, value_of_key in dict_model.items():
+		new_dict += "- " + value_of_key["description"] + "\n"
+	return new_dict
+
+# json packet
+# json.load(): file -> dict
+# json.loads(): str -> dict
+# json.dumps(): dict -> json object
+# json.dump(): dict -> file
+
 
 def _get_col_dtype(col:pd.Series):
 	"""
@@ -174,3 +244,9 @@ info = lambda title, data: print(f"[INFO] + {title}: {data}")
 
 def print_json_idented(data:json):
 	print(json.dumps(data, indent=2))
+
+
+
+def show_csv_file(csv_path):
+	df = pd.read_csv(csv_path)
+	print(df)

@@ -11,7 +11,8 @@ class TransformationRuleModel(BaseModel):
    formula:         Optional[str] = Field(default=None, description="The formula of the transformation rule (TR) according to the transformation type.")
    relational_path: Optional[str] = Field(default=None, description="The relational path positioned as the last term in the rule body.")
 
-# To parsing and pivotin a rr:TriplesMap
+
+# To parsing and pivotin a rr:TriplesMap (Step 1)
 class TriplesMapParsing(BaseModel):
    triples_map_name:  Optional[str]  = Field(default=None, description="Name of the TriplesMap analyzed.")
    logical_table:     Optional[str]  = Field(default=None, description="Logical table or extracted SQL query. SQL Source.")

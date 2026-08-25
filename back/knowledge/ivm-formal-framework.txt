@@ -1,0 +1,451 @@
+Incremental Maintenance of RDB2RDF Views: A
+Post-Update, LLM-Compilable Formulation of
+Changeset Computation
+Anonymized Author
+Anonymized Institution
+Abstract. A strategy for exposing relational data as part of a knowledge
+graph is to define RDB2RDF views that map relational tuples to RDF
+triples using transformation rules. These views are often materialized in
+RDF stores to improve query performance and data availability, requiring
+incremental mechanisms to maintain them under updates. A central
+problem in incremental maintenance is computing deletion changesets,
+which traditionally requires reconstructing the pre-update database state.
+This paper challenges this assumption by introducing a formal model of
+transformation rules that leads to provably correct changesets that operate
+directly over the post-update state. The paper proceeds by describing how
+to create an asynchronous maintenance tool for an RDF view, defined by
+R2RML mappings, leveraging the formal model. The paper first shows
+how to compile R2RML mappings into transformation rules with the
+help of an LLM, prompted with the formal model. Then, it introduces
+an asynchronous maintenance architecture that features AFTER triggers
+automatically synthesized from the transformation rules, again with the
+help of an LLM, prompted with the formal model. Finally, the paper
+describes an experiment that evaluates the complete implementation
+cycle for an RDF view defined on top of a version of the MusicBrainz
+database. The paper therefore demonstrates that LLMs, when guided by
+the proposed formal model, can automatically generate correct database
+triggers and the maintenance logic for the proposed architecture.
+Keywords: LLM SQL Code Generation · Semantic View · Enterprise
+Knowledge Graph · Formal Specification.
+1 Introduction
+Enterprise Knowledge Graphs (EKGs) have emerged as a powerful paradigm
+for integrating heterogeneous enterprise data sources into a unified semantic
+layer. By linking structured and semi-structured data through an ontology, EKGs
+enable applications to query and analyze enterprise information in a semantically
+rich and integrated manner. In many real-world deployments, the underlying
+enterprise data remains stored in relational databases, while the knowledge graph
+provides a semantic access layer on top of these sources.
+2 Anonymized Author
+A common strategy for exposing relational data as part of a knowledge graph
+is the definition of RDB2RDF views, which map relational tuples into RDF triples
+using transformation rules. These views are often materialized in RDF stores to
+improve query performance and data availability. However, when the relational
+source is frequently updated, the materialized RDF view must be continuously
+synchronized with the underlying database. Recomputing the entire RDF view
+after each update is typically impractical, motivating the need for incremental
+maintenance techniques that compute only the changes to the view.
+A well-established approach for incremental maintenance is the computation of
+changesets, represented as a pair ⟨∆−(u), ∆+(u)⟩, capturing the triples removed
+from and added into the RDF view after a relational update u. Prior work has
+shown that, for entity-preserving RDB2RDF mappings, it is sufficient to identify
+the pivot tuples whose RDF contributions may be affected by the update and
+recompute their associated RDF state.
+The formal framework introduced in [3] provides a rigorous method for
+computing such changesets based on transformation rules over relational schemas.
+In particular, in this framework, the deletion component ∆−(u) is defined in
+terms of the pre-update database state. Conceptually, this definition is correct,
+as it captures precisely the RDF triples that must be removed from the view.
+However, it introduces a practical limitation when implementing the framework
+using database triggers, namely, relying on the pre-update database state.
+In relational systems, transition tables (e.g., deleted_R and inserted_R)
+are only available in AFTER statement-level triggers, where the database has
+already transitioned to the post-update state σ1. As a consequence, computing
+∆−(u), according to [3], requires reconstructing portions of the pre-update state
+σ0. When the updated relation is large, this reconstruction can be costly, even if
+the update affects only a small number of tuples.
+This paper challenges this assumption by introducing a formal model of
+changeset computation that operates directly over the post-update state. It
+shows that, for a transformation rule without multiple occurrences of the same
+relation, both deletion and insertion components can be derived using only
+the post-update state, transition tables, and the pre-update view state. For a
+transformation rule with multiple occurrences of the same relation R, it captures
+the impact of deletions and insertions on R directly in the evaluation of the
+transformation rule, still without using the pre-update database state.
+The paper proceeds by describing how to create an asynchronous maintenance
+tool for an RDF view, defined by R2RML mappings, leveraging the formal model.
+The paper first shows how to compile R2RML mappings into transformation rules
+with the help of an LLM, prompted with the formal model. Then, it introduces
+an asynchronous maintenance architecture that selectively decouples SPARQL
+computation from relational transactions. The architecture avoids executing
+SPARQL queries inside relational transactions, preventing triplestore latency
+or temporary unavailability from blocking database updates, while preserving
+correctness and improving scalability. It then discusses how to compile the
+required AFTER triggers from the transformation rules, again with the help of an
+LLM-Assisted RDB2RDF View Maintenance 3
+LLM, prompted with the formal model. In combination, this means that, given
+an RDF view defined by R2RML mappings, the underlying relational database
+can be equipped with AFTER triggers that, combined with the other (fixed)
+components of the architecture, incrementally maintain the RDF view.
+Finally, the paper describes an experiment that evaluates the complete imple-
+mentation cycle for an RDF view defined on top of a version of the MusicBrainz
+database. The database features a schema with 106 relations, encompassing
+information about artists, release groups, etc. The RDF view uses the Music
+Ontology vocabulary and is defined by 57 R2RML mappings.
+The paper therefore demonstrates that Large Language Models (LLMs), when
+guided by the proposed formal model, can act as compilers, automatically gen-
+erating correct database triggers and the maintenance logic for the proposed
+architecture. The experiments showcase that LLMs are already capable of pro-
+cessing a (complex and lengthy) formal model and correctly output the specified
+database code, supporting a new paradigm of specification-driven, LLM-based
+synthesis for incremental RDF view maintenance.
+To summarize, the first contribution of this paper is a formal model of the
+deletion and insertion components of changesets directly over the post-update
+database state. The second contribution is to describe how to create asynchronous
+maintenance tools for RDF views, defined by R2RML mappings. The third
+contribution is to demonstrate that an LLM, guided by appropriate prompts
+and accessing the formal model, can generate database code that computes and
+publishes provably correct changesets.
+The remainder of this article is organized as follows. Section 2 summarizes
+related work. Section 3 reviews the basic concepts of RDB2RML views. Section 4
+describes a case study. Section 5 introduces the proposed incremental view
+maintenance formalism. Section 6 discusses an implementation. Section 7 describes
+the experiments. Section 8 concludes the article. Finally, the appendix contains
+the proofs of the main results.
+2 Related Work
+Incremental View Maintenance (IVM). The Incremental View Mainte-
+nance problem has been studied in the literature [25] for a very long time.
+Early work covered relational views [10], object-oriented views [2], semi-
+structured views [39], and XML views [15], just to name a few efforts.
+Some more recent approaches include the following. As for generic IVM tools,
+DBSP [9] introduces an expressive language that enables efficient incremental
+view maintenance for queries written in several languages, such as SQL and
+Datalog. Enzyme [37] is an IVM engine, developed at Databricks to power Spark
+Declarative Pipelines, that provides a built-in, end-to-end approach to incremental
+pipelines, utilizing materialized views as first-class building blocks. OpenIVM
+[7] is an SQL-to-SQL compiler for Incremental View Maintenance (IVM) that
+compiles view definitions into SQL to eventually propagate deltas into the table
+that materializes the view.
+4 Anonymized Author
+As for IVM SPARQL and graph databases, Incremunica [34] integrates multi-
+ple incremental operators, allowing it to adapt to different queries and data for
+optimal performance, and supporting federated querying, dynamically adding
+and removing sources during query execution, SPARQL Query Language support,
+multiple IVM techniques, and client-side execution. The counting algorithm, a
+classic approach to incremental view maintenance for queries on relational data,
+is adapted in [31] to SPARQL queries on RDF datasets. Graph property views,
+both virtual and materialized, are considered in [13] to integrate heterogeneous
+data, using rewriting techniques.
+Solutions in specific settings, include the following. The maintainance of
+self-join-free conjunctive queries over a dynamic database, where tuples can be
+inserted or deleted, is investigated in [14]. A maintenance approach that combines
+delta queries, trees of materialized views, and heavy-light data partitioning is
+introduced in [1], whose update time matches or improves the best update time
+reported in prior work. The incorporation of knowledge about foreign key into
+IVM in order to speed up its performance is investifated in [32], which reports
+experiments in Redshift showing that the proposed technique improved the
+execution times of the whole refresh process up to 2 times, and up to 2.7 times
+the process of calculating the necessary changes that will be applied into the
+materialized view. Finally, a framework for maintaining sketches incrementally
+under updates is introduced in [17].
+The main idea that distinguishes the formal model proposed in this paper
+from previous work on incremental view maintenance is to explore the entity-
+preservation property of typical RDB2RDF views, which enables the identification
+of the specific tuples relevant to a data source update. Only the portion of the
+view associated with the relevant tuples should be re-materialized.
+The proposed formal model revises earlier work [4], which described an
+incremental maintenance strategy, based on triggers, for RDF views defined on
+top of relational data. This earlier work was further modified and enhanced to
+compute changesets for RDB2RDF views [3]. However, these earlier approaches
+depended on accessing the database state before the update to generate the view
+changesets. The formal model proposed in this paper remediates this situation
+and computes the required view changesets from the post-update database state,
+the current view state, and the update itself.
+The definition of the formal model co-evolved with the prompts used in the
+experiments in the following sense. The experiment started with simple prompts,
+with the original version of the formal model as an attachment. An analysis
+of the results indicated that some errors were due to too simple prompts, on
+the one hand, and to missing or ill-formulated definitions, on the other hand.
+The analysis also pointed out that the formal definitions could be changed to
+induce simpler database code. The prompts and the formal model were altered
+accordingly, and the tests were repeated until satisfactory results were achieved.
+Formal Software Engineering, Code Verification, and LLMs. In formal
+software engineering (SE), LLMs have been employed, for example, to address
+LLM-Assisted RDB2RDF View Maintenance 5
+formal requirements engineering [12], generate verifiable specifications from in-
+formal requirements [8], help with conceptual modeling [19], facilitate software
+testing [6,35], and build trustworthy AI agents [38].
+The application of LLMs to code verification tasks has also received consider-
+able attention [11], for example, including code-invariant generation [21,22] and
+reasoning about program semantics [16].
+Specification-guided LLM Synthesis. Specification-guided LLM synthesis
+refers to the process of generating executable artifacts from formally defined
+semantic specifications.
+For example, Murphy et al. [24] divided code generation into two parts: one
+handled by an LLM and the other by formal methods-based program synthesis.
+VERGE [30] decomposes LLM outputs into atomic claims, autoformalizes them
+into first-order logic, and verifies their logical consistency using automated
+theorem proving. SGCR [36] is a framework that grounds LLMs in human-
+authored specifications to produce trustworthy and relevant feedback.
+Specifically with respect to SQL code generation, the text-to-SQL task, that
+is, the generation of SQL from Natural Language descriptions, has received
+considerable attention. Recent LLM-based text-to-SQL tools are surveyed in
+[18,20,28,29]. The Text-to-SQL Handbook1 lists the best-performing text-to-SQL
+tools on several benchmarks.
+This paper goes in a different direction and shows that LLMs are capable
+of processing a (complex and lengthy) formal model and correctly output the
+formally specified database code. Specifically, the paper shows how to compile
+R2RML mappings into transformation rules with the help of an LLM, prompted
+with the formal model. It proceeds to demonstrate how to compile the required
+AFTER triggers from the transformation rules, again with the help of an LLM,
+prompted with the formal model.
+3 RDB2RDF Views
+3.1 Basic Concepts and Notation
+As usual, a relation scheme is denoted as R[A1, . . . , An]. The relational constraints
+considered in this article consist of mandatory (or not null) attributes, keys,
+primary keys and foreign keys. In particular, F(R:L, S:K) denotes a foreign key,
+named F, that relate R and S, where L and K are lists of attributes from R and
+S, respectively, with the same length.
+A relational schema is a pair S = (R, Ω), where R is a set of relation schemes
+and Ω is a set of relational constraints such that: (i) Ω has a unique primary
+key for each relation scheme in R; (ii) Ω has a mandatory attribute constraint
+for each attribute which is part of a key or primary key; (iii) if Ω has a foreign
+key of the form F(R:L, S:K), then Ω also has a constraint indicating that K is
+1 https://github.com/HKUSTDial/NL2SQL_Handbook
+6 Anonymized Author
+the primary key of S. The vocabulary of S is the set of relation names, attribute
+names, and foreign key names used in S . Given a relation scheme R[A1, . . . , An]
+and a tuple variable t over R, t.Ak denotes the projection of t over Ak. Selections
+over relation schemes are defined as usual.
+A state σ of a relational schema S assigns to each relation scheme R of S a
+relation R(σ), in the usual way. Let S = (R,Ω) be a relational schema and R
+and T be relation schemes of S .
+An ontology vocabulary, or simply a vocabulary, is a set of class names, object
+property names and datatype property names. An ontology is a pair O = (V ,Σ)
+such that V is a vocabulary and Σ is a finite set of formulae in V , the constraints
+of O. The constraints include the definition of the domain and range of a property,
+as well as cardinality constraints, defined in the usual way.
+A foreign key is an expression of the form F (R : K, S : L), where:
+– F is the name of the foreign key;
+– R and S are relation schemes;
+– K and L are lists of attributes of R and S, respectively;
+– |K| = |L|.
+The relation schemes R and S are said to be related by F . The foreign key
+F (R : K, S : L) induces a binary relationship between tuples of R and S and
+may be traversed in either direction, from R to S or from S to R. Lastly, a tuple
+r ∈ R(σ) is related (or connected) to a tuple s ∈ S(σ) with respect to F if and
+only if the values of the attributes in K of r match the values of the attributes
+in L of s.
+A relational path φ is a list of the form [e1, . . . , en−1], where
+– ej is either a foreign key name Fj , indicating that the path traverses Fj from
+Rj to Rj+1, or an expression of the form (Fj )−1, indicating that the path
+traverses the foreign key Fj from Rj+1 to Rj , in the reverse direction;
+– when ej is traversed in the forward direction, then the second relation in ej
+must be equal to the first relation of ej+1;
+– when ej is traversed in the reverse direction, then the first relation in ej must
+be equal to the first relation of ej+1.
+The set of all relation schemes occurring along φ is denoted by Relations(φ).
+A prefix of φ is any sequence ϕ = [e1, . . . , ek] with 0 ≤ k ≤ n − 1.
+Given a database state σ, a tuple r1 ∈ R1(σ) is connected to (or references)
+a tuple rn ∈ Rn(σ) by following the path φ = [e1, . . . , en−1] if and only if there
+exists a sequence of tuples r2, . . . , rn−1 with ri ∈ Ri(σ) for 2 ≤ i ≤ n − 1 such
+that, for each i ∈ {1, . . . , n − 1}, the tuples ri and ri+1 are related with respect
+to the foreign key Fi in the forward or reverse direction.
+A relational path φ induces a predicate path φ(x, y), which is evaluated in a
+database state by joining the relations in the path in the directions indicated,
+using the lists of attributes in the foreign key.
+LLM-Assisted RDB2RDF View Maintenance 7
+An example of a predicate path with two foreign keys is
+[(place_annotation_f k_place)−1,
+place_annotation_f k_annotation](p, an)
+Note that the first expression (place_annotation_f k_place)−1 indicates that
+the foreign key is traverse in the reverse direction.
+3.2 Specification of Entity-Preserving RDB2RDF View
+This section presents the formalism for specifying entity-preserving RDB2RDF
+views. By restricting ourselves to this class of views, we can precisely identify
+the tuples relevant to a data source update w.r.t. an RDB2RDF view.
+The formal definition of an RDB2RDF view is similar to that given in [26,27].
+An RDB2RDF view is a triple W = (V, S , M), where:
+1. V is the vocabulary of the target ontology;
+2. S is the source relational schema; and
+3. M is a set of mappings between V and S , defined by transformation rules
+(TRs).
+A view W = (V, S , M) satisfies the entity-preserving property iff:
+– the instances of the classes in V correspond to tuples in selected relations of
+S , which are called the pivot relations of W, so that distinct tuples from the
+same pivot relation generate distinct class instances;
+– the values of datatype properties in V of these instances are given by (func-
+tions of) attribute values of the corresponding tuples, or of related tuples;
+– the object properties in V correspond to relationships between tuples of the
+pivot relations of S .
+Intuitively, a view satisfies the entity-preserving property iff it preserves the
+base entities (objects) of the source database, rather than creating new entities
+from the existing ones [23].
+The problem of generating transformation rules is addressed in [4,5] and
+is outside of the scope of this work. However, Table 1 summarizes a set of
+Transformation Rule (TR) patterns that lead to the definition of relational to
+RDF mappings that guarantees that the RDF views satisfy the entity-preserving
+property by construction. Table 2 shows the definitions of the concrete predicates
+used by the TR Patterns in Table 1.
+Table 1 defines three types of TR patterns: Class Transformation Rule (CTR),
+Object Property Transformation Rule (OTR), and Datatype Property Transfor-
+mation Rule (DTR), further subdivided into Local DTR and Path DTR.
+Intuitively, a CTR ψ maps tuples of a relation R into RDF instances of a
+class C. It establishes a semantic correspondence between a pivot tuple r and an
+RDF resource x, such that each pivot tuple is associated with at most one RDF
+instance, and distinct pivot tuples generate distinct RDF resources. Thus, the
+mapping preserves the identity of relational entities in the RDF view.
+
+An OTR ψ defines object properties by relating RDF instances generated
+from pivot tuples to RDF instances reached through relational paths in the source
+schema. Hence, OTRs capture relationships between entities represented in the
+relational database.
+There are two types of DTRs. A Local DTR has no relational path in the
+body so that the datatype values are obtained directly from attributes values of
+the pivot tuples. A Path DTR has a relational path in the body and the datatype
+values are obtained from tuples reachable through the relational path from the
+pivot tuples.
+The pivot relation of a TR Ψ , denoted pivot(Ψ ), is the relation whose tuples
+serve as the starting point (pivot tuples) for the construction of RDF triples. In
+particular, pivot tuples determine the URI of the subject of the triples generated
+by Ψ . The body of Ψ uses two auxiliary predicates to handle URIs:
+– hasU RI(PC , P K(r), s): this predicate holds iff:
+• PC is the namespace prefix associated with class C;
+• P K(r) is the value of attributes forming the primary key of tuple r;
+• s is an URI generated by concatenating PC and the list of values in
+P K(r).
+The predicate hasU RI must guarantee that distinct tuples of R generate
+distinct URIs.
+– U RI_C(r, s): this predicate is introduced by definition, as a short-hand
+notation, and indicates that s is the URI generated for the tuple r ∈ R:
+U RI_C(r, s) ≡ hasU RI(PC , P K(r), s)
+The body of Ψ may also use a relational path φ, defined as a list of the form
+“[F1, . . . Fn]”, where Fj is either the name of a foreign key, indicating that the
+path traverses Fj from Rj and Rj+1, or of the form (Fj )−1, indicating that the
+path traverses Fj from Rj+1 to Rj , in the reverse direction.
+A relational path φ induces a predicate path φ(x, y), which is evaluated in a
+database state by joining the relations in the path in the directions indicated.
+The expression path(Ψ ) denotes the relational path of Ψ .
+The approach proposed in this article efficiently computes changesets by
+exploring the entity-preserving property, which allows the precise identification
+of the tuples in the pivot relations whose corresponding instances may have been
+affected by an update. The advantages of this approach are: (1) it simplifies the
+specification of the view, as the formalism is specifically designed to describe
+the correspondences that define an entity-preserving view; (2) the restrictions
+on the structure of the queries help ensure the consistency of the specification
+of the view; (3) the formal expressions that define the queries can be explored
+to construct the procedures automatically that compute the changesets that
+maintain the RDB2RDF view; (4) it facilitates the task of providing rigorous
+proofs for the correctness of the proposed approach.
+LLM-Assisted RDB2RDF View Maintenance 9
+Table 1. Transformation Rule Patterns
+TR Transformation Rule Pattern
+CTR ψ : C(s) ← R(r), U RI_C(r, s), δ(r)
+where
+- ψ is the name of the transformation rule
+- R is the name of a relation or a view in the source schema S
+- r is a tuple variable bound to tuples of R
+- s is the URI associated with the tuple bound to r
+- U RI_C(r, s) associates the tuple bound to r to the URI s
+- δ(r) is an optional selection over R
+OTR ψ : P (s, o) ← RD (d), BD [d, s], RG(g), BG[g, o], φ(d, g)
+where
+- ψ is the name of the transformation rule
+- P is an object property in V with domain D and range G
+- “RD (d), BD [d, s]” is the RHS of the CTR ψD that matches class D
+with pivot relation RD of ψD
+- “RG(g), BG[g, o]” is the RHS of the CTR ψG that matches class G
+with pivot relation RG of ψG
+- φ is a path from RD to RG
+- φ(d, g) holds iff d is connected to g following path φ
+Local DTR ψ : P (s, v) ← RD (r), BD [r, s], nonN ull(g.A1), . . . , nonN ull(g.Ak ),
+RDF Literal(g.A1, “A′′
+1 , “G′′, v1), . . . , RDF Literal(g.Ak , “A′′
+k , “G′′, vk ),
+T ([v1, ..., vk ], v)
+where
+- ψ is the name of the transformation rule
+- P is a datatype property of V with domain D
+- “RD (r), BD [r, s]” is the RHS of the CTR ψD that matches class D with
+pivot relation RD of ψD
+- A1, . . . , Ak are attributes of RD
+- T is an optional function that transforms values of attributes A1, . . . , Ak of RD
+to values of property P
+Path DTR ψ : P (s, v) ← RD (r), BD [r, s], nonN ull(g.A1), . . . , nonN ull(g.Ak ),
+RDF Literal(g.A1, “A′′
+1 , “G′′, v1), . . . , RDF Literal(g.Ak , “A′′
+k , “G′′, vk ),
+T ([v1, ..., vk ], v), φ(r, g)
+where
+- ψ is the name of the transformation rule
+- P is a datatype property of V with domain D
+- “RD (r), BD [r, s]” is the RHS of the CTR ψD that matches class D with
+pivot relation RD of ψD
+- A1, . . . , Ak are attributes of RG
+- T is an optional function that transforms values of attributes A1, . . . , Ak of RG
+to values of property P
+- φ is a path from RD to RG
+- φ(r, g) holds iff r is connected to g following path φ
+10 Anonymized Author
+Table 2. Concrete predicates used by the TR Patterns in Table 1
+Built-in predicate Intuitive definition
+nonNull (v) nonNull (v) holds iff value v is not null
+RDFLiteral (u, A, R, v) Given a value u, an attribute A of R, a relation name R,
+and a literal v, RDFLiteral (u, A, R, v) holds iff v is the
+literal representation of u, given the type of A in R
+F(r, s) Given a tuple r of R and a tuple s of S, F(r, s) holds iff r
+is related to s by a foreign key of the form F(R:L, S:K)
+hasU RI(PC , A, s) Given a tuple r of R, hasU RI(PC , A, s) holds iff s is the
+URI obtained by concatenating the namespace prefix PC
+and the attribute values a1, . . . , an where A is the list
+(in Prolog notation) [a1, . . . , an]. To further simplify mat-
+ters, we admit denoting a list with a single element, “[a]",
+simply as “a".
+U RI_C(r, s) is introduced by definition, as a short-hand notation, and
+indicates that s is the URI generated for the tuple r ∈ R:
+U RI_C(r, s) ≡ hasU RI(PC , P K(r), s)
+This predicate conveniently hides the namespace prefix of
+a class C (which is typically a long string)
+
+3.3 Materialization of an RDB2RDF View
+The state of an RDB2RDF view is represented as a set of quadruples (or quads)
+of the form (s, p, o, g). In standard N-Quads, the fourth element g identifies
+the named graph to which the triple (s, p, o) belongs. In this approach, each
+transformation rule Ψ is associated with a named graph, and its URI is used
+as the fourth element. Thus, each quad (s, p, o, g), where g is the URI of a
+transformation rule Ψ , indicates that the triple (s, p, o) was generated by Ψ .
+This representation allows the RDB2RDF view to be materialized as a set
+of quads partitioned by transformation rules. Intuitively, each rule Ψ induces a
+named graph containing exactly the triples generated by Ψ , which provides a
+simple and operational mechanism for provenance tracking and avoids ambiguity
+in the presence of duplicate triples generated by different rules.
+The state of an RDB2RDF View is defined compositionally in three hierar-
+chical levels.
+Definition 1 (Hierarchical RDF State Semantics). Let W = (V, S, M ) be
+an RDB2RDF view and let σ be a relational database state.
+1. RDF Contribution produced by a Transformation Rule
+Let Ψ ∈ M be a transformation rule whose pivot relation is R∗, with tuple
+variables r1, . . . , rn associated with relation schemes R1, . . . , Rn.
+For tuples p1 ∈ R1(σ), . . . , pn ∈ Rn(σ), the application of Ψ under σ, denoted
+by
+LLM-Assisted RDB2RDF View Maintenance 11
+Ψ [r1 ← p1, . . . , rn ← pn](σ)
+is defined as the set of RDF triples produced by evaluating Ψ with bindings
+ri = pi, for i = 1, . . . , n, over σ.
+2. RDF Contribution of a Pivot Tuple under a Rule. For a pivot
+tuple t ∈ R∗(σ), the RDF contribution of t under Ψ and σ, denoted by
+RDF _State[Ψ ](t, σ), is defined as:
+RDF _State[Ψ ](t, σ) = {(s, p, o, g) | (s, p, o) ∈ Ψ [r ← t](σ), g = U RI(Ψ )}
+3. RDF State of the View W.
+The RDF state of the view W under σ, denoted by RDF _State(W, σ), is
+defined as:
+RDF _State(W, σ) = [
+Ψ ∈M
+[
+t∈pivot(Ψ )(σ)
+RDF _State[Ψ ](t, σ)
+Intuitively, the RDF state of an RDB2RDF view is obtained by aggregating
+the RDF contributions generated by all transformation rules over all pivot tuples
+in the database state.
+The RDF state can be naturally interpreted as an RDF dataset, where each
+quad (s, p, o, g) represents a triple (s, p, o) in the named graph identified by g =
+U RI(Ψ ). Named graphs are used to encode rule-level provenance.

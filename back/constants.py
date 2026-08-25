@@ -37,7 +37,11 @@ TXT_TEN_DASHES = "-" * 20
 # TAGS PARA A DOCUMENTAÇÃO SWAGGER DA API
 TAG_DATASETS = "Datasets"
 TAG_SCHEMA = "Schema"
-# REGISTRIONS
+TAG_AGENTIC = "Agentic"
+TAG_RDB2RDF = "RDB2RDF"
+TAG_R2RML_TO_TR = "R2RML-to-TR"
+TAG_QA = "Q&A"
+# REGISTRATIONS
 TAG_REGISTRATION = "Registration"
 TAG_ORGANIZATION = "Organization"
 TAG_DELTA_TABLE = "Delta Table"
@@ -46,7 +50,6 @@ TAG_USER = "User"
 TAG_RESOURCE = "Resource"
 # LLM
 TAG_LLM = "LLM"
-TAG_AGENTIC = "Agentic"
 
 class NameSpaces:
 	def __init__(self): pass

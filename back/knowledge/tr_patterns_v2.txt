@@ -1,4 +1,18 @@
-TRANSFORMATION RULES PATTERNS 
+Relational Path:
+Let S=(R,Ω) be a relational schema.
+A relational path φ from relation scheme R1 to relation scheme Rn
+is a finite sequence:
+   φ = [F1, ..., Fn−1]
+such that, for each i ∈ {1,...,n−1}, Fi is a foreign key relating Ri and Ri+1.
+φ(r,g) holds iff there exists a sequence of tuples r1,...,rn such that:
+   - r1 = r
+   - rn = g
+   - each pair (ri,ri+1) is connected by Fi
+The operator Relations(·) applied to φ
+returns the set of all relation schemes occurring along the path. 
+Formally, 
+   Relations(φ) = {R1, R2, . . . , Rn}. 
+
 
 Class Transformation Rule (CTR)
 A Class Transformation Rule associated with class C has the form:

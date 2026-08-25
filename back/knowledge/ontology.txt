@@ -1,0 +1,228 @@
+@prefix : <http://www.semanticweb.org/matheusmayron/ontologies/
+2017/1/untitled-ontology-17/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix mo: <http://purl.org/ontology/mo/> .
+@prefix ov: <http://open.vocab.org/terms/> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix muto: <http://purl.org/muto/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix event: <http://purl.org/NET/c4dm/event.owl#> .
+<http://www.semanticweb.org/matheusmayron/ontologies/2017/1/
+untitled-ontology-17> a owl:Ontology .
+#
+#
+# #################################################################
+# #
+# # Object Properties
+# #
+# #################################################################
+#
+#
+# http://purl.org/NET/c4dm/event.owl#factor
+event:factor a owl:ObjectProperty ;
+rdfs:domain mo:Release ;
+rdfs:range mo:SignalGroup .
+#
+# http://purl.org/ontology/mo/label
+mo:label a owl:ObjectProperty ;
+rdfs:domain mo:Release ;
+rdfs:range mo:Label .
+#
+# http://purl.org/ontology/mo/member_of
+mo:member_of a owl:ObjectProperty ;
+rdfs:domain mo:MusicArtist ;
+rdfs:range mo:LArtist .
+#
+# http://purl.org/ontology/mo/produced_work
+mo:produced_work a owl:ObjectProperty ;
+rdfs:domain mo:Composition ;
+rdfs:range mo:MusicalWork .
+#
+# http://purl.org/ontology/mo/publication_of
+mo:publication_of a owl:ObjectProperty ;
+rdfs:domain mo:Track ;
+rdfs:range mo:Record .
+#
+# http://purl.org/ontology/mo/record
+mo:record a owl:ObjectProperty ;
+rdfs:domain mo:Release ;
+rdfs:range mo:Record .
+#
+# http://purl.org/ontology/mo/track
+mo:track a owl:ObjectProperty ;
+rdfs:domain mo:Record ;
+rdfs:range mo:Track .
+#
+# http://xmlns.com/foaf/0.1/based_near
+foaf:based_near a owl:ObjectProperty ;
+rdfs:domain mo:Label , mo:MusicArtist ;
+rdfs:range geo:SpatialThing .
+#
+# http://xmlns.com/foaf/0.1/made
+foaf:made a owl:ObjectProperty ;
+rdfs:domain mo:MusicArtist ;
+rdfs:range mo:Release , mo:Signal , mo:SignalGroup ,
+mo:Track .
+#
+# http://xmlns.com/foaf/0.1/made_release
+foaf:made_release a owl:ObjectProperty ;
+rdfs:subPropertyOf foaf:made ;
+rdfs:domain mo:MusicArtist ;
+rdfs:range mo:Release .
+#
+# http://xmlns.com/foaf/0.1/made_signal
+foaf:made_signal a owl:ObjectProperty ;
+rdfs:subPropertyOf foaf:made ;
+rdfs:domain mo:MusicArtist ;
+rdfs:range mo:Signal .
+#
+# http://xmlns.com/foaf/0.1/made_signalgroup
+foaf:made_signalgroup a owl:ObjectProperty ;
+rdfs:subPropertyOf foaf:made ;
+rdfs:domain mo:MusicArtist ;
+rdfs:range mo:SignalGroup .
+#
+# http://xmlns.com/foaf/0.1/made_track
+foaf:made_track a owl:ObjectProperty ;
+rdfs:subPropertyOf foaf:made ;
+rdfs:domain mo:MusicArtist ;
+rdfs:range mo:Track .
+#
+#
+#
+# #################################################################
+# #
+# # Data properties
+# #
+# #################################################################
+#
+#
+# http://open.vocab.org/terms/sortLabel
+ov:sortLabel a owl:DatatypeProperty ;
+rdfs:domain mo:MusicArtist .
+#
+# http://purl.org/dc/elements/1.1/title
+dc:title a owl:DatatypeProperty ;
+rdfs:domain mo:Record , mo:Release , mo:Signal ,
+mo:SignalGroup , mo:Track .
+#
+# http://purl.org/muto/core#tagLabel
+muto:tagLabel a owl:DatatypeProperty ;
+rdfs:domain muto:Tag .
+#
+# http://purl.org/ontology/mo/duration
+mo:duration a owl:DatatypeProperty ;
+rdfs:domain mo:Signal , mo:Track .
+#
+# http://purl.org/ontology/mo/musicbrainz_guid
+mo:musicbrainz_guid a owl:DatatypeProperty ;
+rdfs:domain mo:Label , mo:MusicArtist , mo:MusicalWork ,
+mo:Release , mo:Signal , mo:SignalGroup .
+#
+# http://purl.org/ontology/mo/track_count
+mo:track_count a owl:DatatypeProperty ;
+rdfs:domain mo:Record .
+#
+# http://purl.org/ontology/mo/track_number
+mo:track_number a owl:DatatypeProperty ;
+rdfs:domain mo:Track .
+#
+# http://www.w3.org/2000/01/rdf-schema#comment
+rdfs:comment a owl:DatatypeProperty ;
+rdfs:domain mo:Label , mo:MusicArtist , mo:MusicalWork ,
+mo:Release , mo:Signal , mo:SignalGroup , geo:SpatialThing .
+#
+# http://www.w3.org/2000/01/rdf-schema#label
+rdfs:label a owl:DatatypeProperty ;
+rdfs:domain geo:SpatialThing .
+#
+# http://www.w3.org/2000/01/rdf-schema#musicalwork_comment
+rdfs:musicalwork_comment a owl:DatatypeProperty ;
+rdfs:domain mo:MusicalWork .
+#
+# http://www.w3.org/2000/01/rdf-schema#signalgroup_comment
+rdfs:signalgroup_comment a owl:DatatypeProperty ;
+rdfs:domain mo:SignalGroup .
+#
+# http://www.w3.org/2004/02/skos/core#altLabel
+skos:altLabel a owl:DatatypeProperty ;
+rdfs:domain mo:MusicArtist .
+#
+# http://xmlns.com/foaf/0.1/gender
+foaf:gender a owl:DatatypeProperty ;
+rdfs:domain mo:MusicArtist .
+#
+# http://xmlns.com/foaf/0.1/name
+foaf:name a owl:DatatypeProperty ;
+rdfs:domain mo:MusicArtist .
+#
+#
+#
+# #################################################################
+# #
+# # Classes
+# #
+# #################################################################
+#
+#
+# http://purl.org/muto/core#Tag
+muto:Tag a owl:Class .
+#
+# http://purl.org/ontology/mo/AltLabel
+mo:AltLabel a owl:Class .
+#
+# http://purl.org/ontology/mo/Comment
+mo:Comment a owl:Class .
+#
+# http://purl.org/ontology/mo/Composition
+mo:Composition a owl:Class .
+#
+# http://purl.org/ontology/mo/Gender
+mo:Gender a owl:Class .
+#
+# http://purl.org/ontology/mo/LArtist
+mo:LArtist a owl:Class .
+#
+# http://purl.org/ontology/mo/Label
+mo:Label a owl:Class .
+#
+# http://purl.org/ontology/mo/MusicArtist
+mo:MusicArtist a owl:Class .
+#
+# http://purl.org/ontology/mo/MusicGroup
+mo:MusicGroup a owl:Class ;
+rdfs:subClassOf mo:MusicArtist .
+#
+# http://purl.org/ontology/mo/MusicalWork
+mo:MusicalWork a owl:Class .
+#
+# http://purl.org/ontology/mo/Record
+mo:Record a owl:Class .
+#
+# http://purl.org/ontology/mo/Release
+mo:Release a owl:Class .
+#
+# http://purl.org/ontology/mo/Signal
+mo:Signal a owl:Class .
+#
+# http://purl.org/ontology/mo/SignalGroup
+mo:SignalGroup a owl:Class .
+#
+# http://purl.org/ontology/mo/SoloMusicArtist
+mo:SoloMusicArtist a owl:Class ;
+rdfs:subClassOf mo:MusicArtist .
+#
+# http://purl.org/ontology/mo/Track
+mo:Track a owl:Class .
+#
+# http://www.w3.org/2003/01/geo/wgs84_pos#SpatialThing
+geo:SpatialThing a owl:Class .
+#
+# Generated by the OWL API (version 4.2.6.20160910-2108) https://
+github.com/owlcs/owlapi

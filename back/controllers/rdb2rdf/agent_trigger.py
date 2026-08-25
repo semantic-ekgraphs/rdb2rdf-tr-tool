@@ -234,7 +234,7 @@ ivm_trigger_compiler_agent = Agent(
       "into strict database procedural code. You understand that statement-level triggers (using transition "
       "tables like 'inserted' and 'deleted' via REFERENCING) are foundational for performance-driven "
       "Incremental View Maintenance. You interpret formal logic semantics, relevance criteria, and procedural "
-      "algorithms (such as Algorithms 1 and 2 from the IVM_abril_21 document) with absolute, bug-free "
+      "algorithms (such as Algorithms 1 and 2 from the ivm_formal_framework document) with absolute, bug-free "
       "mathematical rigor, translating abstract graph updates into highly-performant relational queries."
    ),
    llm=llama3_groq,
@@ -251,23 +251,23 @@ ivm_trigger_compiler_agent = Agent(
 # Contexto unificado que injeta os arquivos e especificações acadêmicas passadas no kickoff
 inputs_context = """
 [Especificações e Contrato Técnico]
-- Documento de Referência Fundamental: {ivm_framework_document} (Contendo Seção 6, Algoritmos 1 e 2, Semântica Formal e Relevância)
-- Tabela Alvo: {table}
+- Documento de Referência Fundamental: {ivm_formal_framework} (Contendo Seção 6, Algoritmos 1 e 2, Semântica Formal e Relevância)
+- Tabela Alvo: {relation}
 - Operação: UPDATE (Statement-level)
-- Função Mandatória: Compute_Changeset_{table}
+- Função Mandatória: Compute_Changeset_{relation}
 """
 
 # Tarefa 1: Análise Semântica de Relevância (Passo Inicial)
 task_semantic_relevance_analysis = Task(
    description=(
-      "Step 1: Analyze the target relation R against the rules of the framework. "
+      "Step 1: Analyze the target relation {relation} against the rules of the framework. "
       "Apply the 'Relevance definitions' from Section 6 of the provided document. "
-      "Identify which Transformation Rules (TRs) are triggered or impacted by an UPDATE statement on R. "
+      "Identify which Transformation Rules (TRs) are triggered or impacted by an UPDATE statement on {relation}. "
       "Formulate the abstract formal semantics of these rules to isolate exactly which graph structures change.\n"
       f"{inputs_context}"
    ),
    expected_output=(
-      "A structured breakdown mapping the relation R to all relevant TRs and their corresponding "
+      "A structured breakdown mapping the relation {relation} to all relevant TRs and their corresponding "
       "graph patterns affected by data modifications."
    ),
    agent=ivm_trigger_compiler_agent,
@@ -295,15 +295,15 @@ task_algorithmic_mapping = Task(
 task_compile_postgres_trigger = Task(
    description=(
       "Step 3: Synthesize the logic from the algorithmic mapping into a solid, production-ready SQL script. "
-      "Generate the complete PostgreSQL PL/pgSQL function named exactly 'Compute_Changeset_R'. "
-      "It MUST handle statement-level updates using 'REFERENCING OLD TABLE AS ... NEW TABLE AS ...'. "
-      "Generate the corresponding 'CREATE TRIGGER ... AFTER UPDATE ON R FOR EACH STATEMENT' block.\n"
+      "Generate the complete PostgreSQL PL/pgSQL function named exactly 'Compute_Changeset_{relation}'. "
+      "It MUST handle statement-level updates using 'REFERENCING OLD TABLE AS deleted_{relation} NEW TABLE AS inserted_{relation}'. "
+      "Generate the corresponding 'CREATE TRIGGER ... AFTER UPDATE ON {relation} FOR EACH STATEMENT' block.\n"
       "Finally, run the 'PostgreSQL Statement-Level Trigger Validator' tool on the generated SQL to verify "
       "that all statement-level constraints and syntax contracts are fully met."
    ),
    expected_output=(
-      "The finalized compilation artifact: complete, syntactically verified PostgreSQL statement-level trigger "
-      "definition and the Compute_Changeset_R function logic."
+      "The finalized compilation artifact: complete, syntactically verified PostgreSQL statement-level AFTER trigger "
+      "definition and the Compute_Changeset_{relation} function logic."
    ),
    agent=ivm_trigger_compiler_agent,
    context=[task_algorithmic_mapping],  # DEPENDÊNCIA EXPLÍCITA FINAL
@@ -316,7 +316,9 @@ task_compile_postgres_trigger = Task(
 # =====================================================================
 
 ivm_trigger_crew_v2 = Crew(
-   agents=[ivm_trigger_compiler_agent],
+   agents=[
+      ivm_trigger_compiler_agent
+   ],
    tasks=[
       task_semantic_relevance_analysis,
       task_algorithmic_mapping,
@@ -325,6 +327,7 @@ ivm_trigger_crew_v2 = Crew(
    process=Process.sequential,  # Garante execução sequencial rígida baseada em dependência
    verbose=True
 )
+
 
 # Exemplo de Inicialização (Kickoff):
 # resultado_sql_trigger = ivm_trigger_crew.kickoff(inputs={
