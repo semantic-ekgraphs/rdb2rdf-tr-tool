@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 from utils import console_log, read_txt_file, write_json_after_trigger_output_file
-from .rdb2rdf_agentic import object_preserving_team, transformation_rules_team
+from .tr_gen_agentic import object_preserving_team, transformation_rules_team
 from .entity_preserving import entity_preserving_team
 # from .workflow import transformation_rules_team
 # from .workflow import object_preserving_team
@@ -168,7 +168,7 @@ async def analyzes_entity_preserving_R2RML_mappings():
 
 
 
-from .rdb2rdf_agentic import team_answer_questions_about_people_using_ks
+from .tr_gen_agentic import team_answer_questions_about_people_using_ks
 
 
 async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_question:str) -> str:

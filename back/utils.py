@@ -250,3 +250,7 @@ def print_json_idented(data:json):
 def show_csv_file(csv_path):
 	df = pd.read_csv(csv_path)
 	print(df)
+
+
+
+# https://docs.google.com/document/d/1FU7M8qcHQhQvPcYbidvnTS28UfEBj5H_lqayQ_pAc-s/edit?tab=t.0

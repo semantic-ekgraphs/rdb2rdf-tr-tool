@@ -455,7 +455,7 @@ This example illustrates that hasURI reproduces exactly the URI specified by the
 ### ==========================================
 ### TRANSFORMATION RULES TEAM
 ### ==========================================
-r2rml_to_tr_compilation_team = Crew(
+r2rml_mbz_to_tr_compilation_team = Crew(
    agents  = [agent_vania_r2rml_to_tr_],
    tasks   = [task_vania_compile_r2rml_to_tr_],
    process = 'sequential',

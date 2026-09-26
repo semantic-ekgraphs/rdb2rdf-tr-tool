@@ -9,9 +9,9 @@ from utils import read_csv_and_transform_in_input_to_task
 # from .workflow import object_preserving_team
 # from .agent_trigger import ivm_trigger_crew_v2
 # from .agent_vania import team_after_trigger
-from .r2rml_to_tr_mbz import r2rml_to_tr_compilation_team
+from .r2rml_to_tr_mbz import r2rml_mbz_to_tr_compilation_team
 # from .r2rml_to_tr_mbz import r2rml_to_tr_compilation_team_using_knowledge_sources
-from .r2rml_to_tr_agentic import r2rml_to_tr_compilation_team_using_knowledge_sources
+from .r2rml_to_tr_agentic import r2rml_to_tr_compilation_team
 from .r2rml_to_tr_agentic import task_parsing_r2rml_to_table
 
 console = lambda x: console_log("R2RML2TR CONTROLLER", x)
@@ -76,7 +76,7 @@ async def compile_r2rml_to_trasnformation_rules_using_knowledge_sources():
       'csv' : str(csv_content)
    }
 
-   answer = r2rml_to_tr_compilation_team_using_knowledge_sources.kickoff(inputs)
+   answer = r2rml_to_tr_compilation_team.kickoff(inputs)
 
    if answer is not None:
       return answer

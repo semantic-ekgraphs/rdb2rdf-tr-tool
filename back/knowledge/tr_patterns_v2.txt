@@ -1,60 +1,72 @@
+BASIC CONCEPTS
+---
 Relational Path:
 Let S=(R,Ω) be a relational schema.
-A relational path φ from relation scheme R1 to relation scheme Rn
-is a finite sequence:
+A relational path φ from relation scheme R1 to relation scheme Rn is a finite sequence:
    φ = [F1, ..., Fn−1]
 such that, for each i ∈ {1,...,n−1}, Fi is a foreign key relating Ri and Ri+1.
 φ(r,g) holds iff there exists a sequence of tuples r1,...,rn such that:
    - r1 = r
    - rn = g
-   - each pair (ri,ri+1) is connected by Fi
+   - each pair (ri, ri+1) is connected by Fi
 The operator Relations(·) applied to φ
 returns the set of all relation schemes occurring along the path. 
 Formally, 
    Relations(φ) = {R1, R2, . . . , Rn}. 
 
 
-Class Transformation Rule (CTR)
-A Class Transformation Rule associated with class C has the form:
-   ψ: C(s)←R(r), URI_R​(r,s), δ(r)
+
+TRANSFORMATION RULES PATTERNS
+---
+Class Transformation Rule
+A Class Transformation Rule or CTR associated with class C has the form:
+   ψ: C(s) ← R(r), URI_R(r, s), δ(r)
 where:
-   - ψ is the identifier of the transformation rule;
-   - C is a class; 
-   - R is a relation scheme or virtual table in the source schema S;
+   - ψ is the CTR identifier;
+   - C is a class in the target ontology; 
+   - R is a relation in the source relational schema S;
+   - URI_R(r, s) is the URI constructor predicate of the RDF resource corresponding to r;
    - r is a tuple variable ranging over tuples of R;
-   - s is the URI generated for tuple r;
-   - URI_R​(r,s) generates the URI of the RDF resource corresponding to r;
-   - δ(r) is an optional selection predicate over tuples of R.
+   - s is the URI generated derived from tuple r;
+   - δ(r) is an optional selection condition predicate over tuples of R.
+
 The relation R is called the pivot relation of the rule, and tuples of R are called pivot tuples. 
 Distinct pivot tuples must generate distinct RDF resources.
-Example: foaf:Organization(s) ← empresa(e), URI_empresa(e, s)
+A CTR example is: 
+CTR\_company1: foaf:Organization(s) ← company(c), URI_company(c, s)
 
 Object Type Transformation Rule (OTR)
-   ψ: P(s, o) ← RD(d), BD[d,s], RG(g), BG[g, o], φ(d, g)
+   ψ: P(s, o) ← RD(d), BD[d, s], RG(g), BG[g, o], φ(d, g)
 where:
    - ψ is the identifier of the OTR.
-   - P is an object property in V with domain D and range G. 
-   - “RD(d), BD[d,s]” is the RHS of the CTR ψD that matches class D with pivot relation RD of ψD.
-   - “RG(g), BG[g, o]” is the RHS of the CTR ψG that matches class G with pivot relation RG ψG.
-   - φ  is a path from RD to relation RG  
+   - P is an object property in V (vocabulary of ontology) with domain D and range G.
+   - D and G are classe in V; 
+   - "RD(d), BD[d,s]" is the right-hand side (RHS) of the CTR ψD that matches class D with pivot relation RD of ψD.
+   - "RG(g), BG[g, o]" is the RHS of the CTR ψG that matches class G with pivot relation RG ψG.
+   - φ is a path from RD to relation RG  
    - φ(d, g) holds iff d is connected to g following the path ϕ 
+An OTR example is
+foaf:hasEmployee(s, o) ← company(c), URI_company(c, s), employee(e), URI_employee(e, o), [fk_company_employee](s, o)
 
 Data Type Transformation Rule (DTR)
-Local-DTR (the attributes are from the pivot relation) 
-ψ: P(s, v) ← RD(r), BD[r, s], nonNull(g.A1), . . . ,nonNull(g.Ak), RDFLiteral(g.A1, "A1", RD, v1), . . . , RDFLiteral(g.Ak, "Ak", RD, vk), T([v1, . . . , vk], v),
-where
-   - ψ is the identifier of the DTR.
-   - P is a datatype property in V with domain D. 
-   - “RD(r), BD[r, x]” is the right-hand side for the CTR that matches class D with pivot relation RD. 
-   - A1, . . . , Ak are attributes of RD. 
-   - T is an optional function that transforms values of attributes A1, . . . , Ak to values of property P.
+There are two possibilities for DTR:
 
-Path-DTR (the attributes are from a related relation) 
-ψ: P(s, v) ← RD(r), BD[r, s], RG(g), nonNull(g.A1), . . . ,nonNull(g. Ak), RDFLiteral(g.A1, "A1", RG, v1), . . . , RDFLiteral(g.Ak, "Ak", RG, vk), T([v1, . . . , vk], v), φ(r, g)
- where
+Local-DTR The attributes belong to the pivot relation. Its transformation rule has the following pattern:
+   ψ: P(s, v) ← RD(d), BD[d, s], nonNull(d.A1), . . . , nonNull(d.Ak), RDFLiteral(d.A1, "A1", RD, v1), . . . , RDFLiteral(g.Ak, "Ak", RD, vk), T([v1, . . . , vk], v),
+where:
 - ψ is the identifier of the DTR.
 - P is a datatype property in V with domain D. 
-- “RD(r), BD[s, x]” is the right-hand side for the CTR that matches class D with pivot relation RD. 
-- φ  is an optional path from RD to relation RG.  
+- ``RD(r), BD[r, x]'' is the right-hand side for the CTR ψD that matches class D with pivot relation RD. 
+- A1, . . . , Ak are attributes of RD. 
+- T is an optional transformation function that transforms values of attributes A1, . . . , Ak to values of property P.
+
+
+Path-DTR (the attributes are from a related relation). Its transformation rule has the following pattern:
+   ψ: P(s, v) ← RD(d), BD[d, s], RG(g), nonNull(g.A1), . . . , nonNull(g. Ak), RDFLiteral(g.A1, "A1", RG, v1), . . . , RDFLiteral(g.Ak, "Ak", RG, vk), T([v1, . . . , vk], v), φ(d, g)
+where:
+- ψ is the identifier of the DTR.
+- P is a datatype property in V with domain D. 
+- ``RD(d), BD[d, x]'' is the right-hand side for the CTR that matches class D with pivot relation RD. 
+- φ is an path from pivot relation RD to relation RG.  
 - A1, . . . , Ak are the attributes of RG.  
-- T is an optional function that transforms values of attributes A1, . . . , Ak to values of property P.
+- T is an optional transformation function that transforms values of attributes A1, . . . , Ak to values of property P.

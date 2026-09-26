@@ -2,18 +2,18 @@ TRANSFORMATION RULES PATTERNS
 
 Class Transformation Rule (CTR)
 A Class Transformation Rule associated with class C has the form:
-   ψ: C(s)←R(r), URI_R​(r,s), δ(r)
+   ψ: C(s)←R(r), URI_R(r, s), δ(r)
 where:
    - ψ is the identifier of the transformation rule;
    - C is a class; 
    - R is a relation scheme or virtual table in the source schema S;
    - r is a tuple variable ranging over tuples of R;
    - s is the URI generated for tuple r;
-   - URI_R​(r,s) generates the URI of the RDF resource corresponding to r;
+   - URI_R(r,s) generates the URI of the RDF resource corresponding to r;
    - δ(r) is an optional selection predicate over tuples of R.
 The relation R is called the pivot relation of the rule, and tuples of R are called pivot tuples. 
 Distinct pivot tuples must generate distinct RDF resources.
-Example: foaf:Organization(s) ← empresa(e), URI_empresa(e, s)
+CTR Example: foaf:Organization(s) ← empresa(e), URI_empresa(e, s)
 
 Object Type Transformation Rule (OTR)
    ψ: P(s, o) ← RD(d), BD[d,s], RG(g), BG[g, o], φ(d, g)

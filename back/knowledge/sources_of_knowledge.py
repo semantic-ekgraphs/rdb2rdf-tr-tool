@@ -1,47 +1,22 @@
 from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
+from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource 
+
+
+knowledge_of_entity_preserving_specification = PDFKnowledgeSource(
+   file_paths=["formal-especification-of-entity-preserving.pdf"]
+)
 
 knowledge_source_transformation_rule_patterns = TextFileKnowledgeSource(
    file_paths=["tr_patterns_v2.txt"]
 )
 
+
+
+knowledge_source_transformation_rule_patterns_v2 = PDFKnowledgeSource(
+   file_paths=["transformation-rules-patterns-rdb2rdf-views.pdf"]
+)
+
+
 transformation_rules_formalism = TextFileKnowledgeSource(
-   file_paths=["formal_espec_entity_preserving.txt"]
+   file_paths=["tr_formalism.txt"]
 )
-
-knowledge_of_transformation_rules = TextFileKnowledgeSource(
-   file_paths=["formal_espec_entity_preserving.txt", "tr_patterns_v2.txt"]
-)
-
-# object_preserving_definition_knowledge_source = TextFileKnowledgeSource(
-#    file_paths=["object_preserving_definition.txt"]
-# )
-
-# entity_preserving_definition_knowledge_source = TextFileKnowledgeSource(
-#    file_paths=["entity_preserving_definition.txt"]
-# )
-
-# tr_patterns_knowledge_source_txt = TextFileKnowledgeSource(
-#    file_paths=["tr_patterns_v2.txt"]
-# )
-
-# object_preserving_definition_knowledge_source = TextFileKnowledgeSource(
-#    file_paths=["object_preserving_definition.txt"]
-# )
-
-# entity_preserving_definition_knowledge_source = TextFileKnowledgeSource(
-#    file_paths=["entity_preserving_definition.txt"]
-# )
-
-
-
-# tr_patterns_knowledge_source_txt = TextFileKnowledgeSource(
-#    file_paths=["tr_patterns_v2.txt"]
-# )
-
-# object_preserving_definition_knowledge_source = TextFileKnowledgeSource(
-#    file_paths=["object_preserving_definition.txt"]
-# )
-
-# entity_preserving_definition_knowledge_source = TextFileKnowledgeSource(
-#    file_paths=["entity_preserving_definition.txt"]
-# )

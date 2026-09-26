@@ -3,12 +3,11 @@ from crewai import Agent, Task, Crew
 from llms import gpt_4o_mini_openai
 # from knowledge.sources_of_knowledge  import transformation_rules_formalism
 # from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns
-from knowledge.sources_of_knowledge import knowledge_of_transformation_rules
+from knowledge.sources_of_knowledge import knowledge_of_entity_preserving_specification
+from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 # from models.task_output import TriplesMapParsing, TriplesMapParsingList
 from .model import TriplesMapParsing
-from utils import get_descriptions_of_a_pydantic_model
-
 
 
 agent_r2rml_to_tr = Agent(
@@ -16,7 +15,7 @@ agent_r2rml_to_tr = Agent(
    goal=(
       "Translate R2RML TriplesMaps into schema-grounded, mathematically rigorous "
       "Transformation Rules (TRs) by reconstructing the underlying semantic structure "
-      "of the relational views, identifying precise pivot relations, determining object-preservation "
+      "of the relational views, identifying precise pivot relations, determining entity-preservation "
       "compliance, and isolating structural relational paths as the final term of rule bodies."
    ),
    backstory=(
@@ -35,7 +34,7 @@ agent_r2rml_to_tr = Agent(
    llm=gpt_4o_mini_openai,
 )
 
-
+# Step 1 - R2RML Parsing (this parsing transform R2RML in a table)
 expected_csv_output_2 = f"""
 A raw CSV (comma-separated values) document, where the first line is the header consisting solely of the following names:
 {";".join(list(TriplesMapParsing.model_fields.keys()))}
@@ -51,7 +50,6 @@ Generate an additional row for the R2RML mapping of type rr:subjectMap regarding
 - For subjectMap, the mapped rdf is always 'rdf:type' and mapped object is 'None'.
 """
 
-# Step 1 - R2RML Parsing (this parsing transform R2RML in a table)
 task_parsing_r2rml_to_table = Task(
    description="""
 For each TriplesMap in the R2RML mappings extracts:
@@ -77,34 +75,38 @@ Important Requirements:
 )
 
 
+# Step 2 - R2RML Parsed (this transforma parsed R2RML in TRs)
+
+# ;hasURI predicate;URI Constructor predicate;Transformation Rules
+# and corresponding URI_R Constructor predicate conform transformation rules patterns. 
+# - Generate the Transformation Rules.
 expected_csv_output_3 = f"""
-A raw CSV (comma-separated values) document, where the first line is the header consisting solely of the following names:
-triples_map_id;pivot relation;hasURI definition;URI Constructor;Transformation Rules
-
+A raw CSV (comma/semicolon-separated values) document, where the first line is the header consisting solely of the following names:
+triples_map_id;pivot_relation;justify_preservation;hasURI predicate
 Terminate the process if the header contains names other than those specified, and recreate the header with the correct names.
-
 The output must be formatted according to the following specifications:
 - Delimiter: Use semicolon (`;`) to separate values;
-- Quoting & Escaping: Any field containing commas, line breaks, or quotation marks (such as SQL queries, transformation functions or URL) MUST be wrapped entirely in double quotes (`"`). Internal double quotes must be escaped as `\"`.
+- Quoting & Escaping: Any field containing commas, line breaks, or quotation marks MUST be wrapped entirely in double quotes (`"`). Internal double quotes must be escaped as `\"`.
 - Raw Output Only: The output must contain ONLY the raw CSV content. Do NOT wrap the output in Markdown code blocks (e.g., ```csv), and do NOT include introductory text, explanations, or metadata footnotes."""
 
-task_transform_parsed_r2rml_to_transformation_rules = Task(
+task_compile_parsed_r2rml_to_transformation_rules = Task(
    description="""
-Transforms an Entity-Preserving R2RML mapping into a certified semantic specification expressed as Transformation Rules. The R2RML-to-TR Compilation Process consists of the following five steps (subtasks):
-- Identify the Pivot Relation and Verify Entity Preservation.
-- Derive and Validate the URI Constructor and corresponding hasURI predicate. 
-- Validate Pivot Relations and URI constructors
-- Generate and Validate the Transformation Rules.
+Compile an Entity-Preserving R2RML mapping into as Transformation Rules analysing the content of parsed R2RML triples mapping. The R2RML-to-TR Compilation Process consists of the following subtasks:
+- Identify the pivot relation from each triples map identifier analysing the logical table content of parsed R2RML triples mapping.
+- Justify the entity preservation.
+- Derive the hasURI predicate from the content of the parsed R2RML triples mapping following the hasURI predicate pattern.
+
+
 Input Context: 
-- the parsed Entity-Preserving R2RML mappings delimited between <csv></csv> tags:
-<csv>
+- the parsed R2RML mappings as table delimited between <EntityPreservingR2RMLMapping></EntityPreservingR2RMLMapping> tags:
+<EntityPreservingR2RMLMapping>
 {csv}
-</csv>
+</EntityPreservingR2RMLMapping>
 Important Requirements:
 - Analyze each row, independently""",
    # context=[task_parsing_r2rml_to_table],
    expected_output=expected_csv_output_3,
-   output_file=f"temp/parsed_r2rml_to_tr_{date_now}.txt",
+   output_file=f"temp/parsed_r2rml_to_tr_260827.csv",
    markdown=False,
    agent=agent_r2rml_to_tr
 )
@@ -534,14 +536,15 @@ This example illustrates that hasURI reproduces exactly the URI specified by the
 ### ==========================================
 ### TRANSFORMATION RULES TEAM
 ### ==========================================
-r2rml_to_tr_compilation_team_using_knowledge_sources = Crew(
+r2rml_to_tr_compilation_team = Crew(
    agents  = [agent_r2rml_to_tr],
    tasks   = [
       # task_parsing_r2rml_to_table,
-      task_transform_parsed_r2rml_to_transformation_rules
+      task_compile_parsed_r2rml_to_transformation_rules
    ],
    process = 'sequential',
-   knowledge_sources=[knowledge_of_transformation_rules]
+   knowledge_sources=[knowledge_of_entity_preserving_specification, 
+                      knowledge_source_transformation_rule_patterns_v2]
 )
 
 

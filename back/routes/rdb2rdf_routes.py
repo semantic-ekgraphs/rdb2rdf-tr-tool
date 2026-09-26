@@ -37,6 +37,9 @@ async def analyzes_entity_preservation_R2RML_mappings():
 
 
 
+@router.get("/trp-qa/", description="Route to answer a user's questions about transformation rules patterns for RDB2RDF views")
+async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_question: str):  
+   return await rdb2rdf_controller.answer_transformation_rules_patterns_for_rdb2rdf_question(user_question)
 
 
 
