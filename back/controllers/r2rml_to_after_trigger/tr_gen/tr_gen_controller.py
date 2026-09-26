@@ -3,26 +3,58 @@ from pathlib import Path
 from datetime import datetime
 from utils import console_log, read_txt_file, write_json_after_trigger_output_file
 from .tr_gen_agentic import object_preserving_team, transformation_rules_team
-from .entity_preserving import entity_preserving_team
+# from .entity_preserving import entity_preserving_team
 # from .workflow import transformation_rules_team
 # from .workflow import object_preserving_team
 # from .agent_trigger import ivm_trigger_crew_v2
 # from .agent_vania import team_after_trigger
 
 console = lambda x: console_log("RDB2RDF CONTROLLER", x)
+parent_folders = "../../../"
 # inputs
-r2rml_file                = Path(__file__).parent / "../../temp/mbz_r2rml_short.ttl"
-rdb_schema_file           = Path(__file__).parent / "../../temp/mbz_schema_short.sql"
-tr_patterns_file          = Path(__file__).parent / "../../knowledge/tr_patterns_v2.txt"
-ivm_formal_framework_file = Path(__file__).parent / "../../knowledge/ivm-formal-framework.txt"
-maintenance_queue_file    = Path(__file__).parent / "../../knowledge/maintenance-queue-infrastructure.txt"
-ontology_file             = Path(__file__).parent / "../../knowledge/ontology.txt"
-uri_definition_file       = Path(__file__).parent / "../../knowledge/uri_predicates_definition.txt"
+r2rml_file                = Path(__file__).parent / parent_folders / "temp/mbz_r2rml_short.ttl"
+rdb_schema_file           = Path(__file__).parent / parent_folders / "temp/mbz_schema_short.sql"
+tr_patterns_file          = Path(__file__).parent / parent_folders / "knowledge/tr_patterns_v2.txt"
+ivm_formal_framework_file = Path(__file__).parent / parent_folders / "knowledge/ivm-formal-framework.txt"
+maintenance_queue_file    = Path(__file__).parent / parent_folders / "knowledge/maintenance-queue-infrastructure.txt"
+ontology_file             = Path(__file__).parent / parent_folders / "knowledge/ontology.txt"
+uri_definition_file       = Path(__file__).parent / parent_folders / "knowledge/uri_predicates_definition.txt"
 # outputs
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-parsing_md_file           = Path(__file__).parent / "../../temp/parsing.md"
-parsing_json_file         = Path(__file__).parent / f"../../temp/parsing_r2rml_{date_now}.json"
-mbz_tr_file               = Path(__file__).parent / "../../temp/mbz_tr.json"
+parsing_md_file           = Path(__file__).parent / parent_folders / "temp/parsing.md"
+parsing_json_file         = Path(__file__).parent / parent_folders / f"temp/parsing_r2rml_{date_now}.json"
+mbz_tr_file               = Path(__file__).parent / parent_folders / "temp/mbz_tr.json"
+
+
+
+
+
+async def transform_r2rml_into_transformation_rules() -> str:
+   print(console('transform_r2rml_into_transformation_rules()'))
+
+   r2rml_content       = read_txt_file(r2rml_file)
+   schema_sql_content  = read_txt_file(rdb_schema_file)
+   tr_patterns_content = read_txt_file(tr_patterns_file)
+
+   # These key must be the same in input_description in the Task
+   inputs = {
+      'r2rml_mapping': r2rml_content, 
+      'rdb_schema':    schema_sql_content,
+      'tr_patterns':   tr_patterns_content
+   }
+
+   answer = transformation_rules_team.kickoff(inputs)
+
+   _return = None
+   with open(parsing_json_file, "w", encoding="utf-8") as file:
+      # ensure_ascii=False: Crucial if your data includes international characters, symbols, or emojis. This saves them natively rather than converting them to escape sequences like \u1234
+      _return = file.write(answer.raw)
+      if _return is not None:
+         return answer
+      else:
+         return {'message': 'Fail!!'}
+            
+
 
 
 # async def generate_after_trigger(relation:str) -> str:
@@ -56,34 +88,6 @@ mbz_tr_file               = Path(__file__).parent / "../../temp/mbz_tr.json"
 
 
 
-# async def transform_r2rml_to_transformation_rules() -> str:
-#    print(console('transform_r2rml_to_transformation_rules()'))
-
-#    r2rml_content       = read_txt_file(r2rml_file)
-#    schema_sql_content  = read_txt_file(schema_sql_short_file)
-#    tr_patterns_content = read_txt_file(tr_patterns_file)
-
-#    # These key must be the same in input_description in the Task
-#    inputs = {
-#       'r2rml_mapping': r2rml_content, 
-#       'rdb_schema':    schema_sql_content,
-#       'tr_patterns':   tr_patterns_content
-#    }
-
-#    answer = transformation_rules_team.kickoff(inputs)
-
-#    _return = None
-#    with open(parsing_json_file, "w", encoding="utf-8") as file:
-#       # ensure_ascii=False: Crucial if your data includes international characters, symbols, or emojis. This saves them natively rather than converting them to escape sequences like \u1234
-#       _return = file.write(answer.raw)
-#       if _return is not None:
-#          return answer
-#       else:
-#          return {'message': 'Fail!!'}
-            
-
-
-
 
 # async def object_preserving_analysis() -> str:
 #    print(console('object_preserving_analysis()'))
@@ -111,25 +115,21 @@ mbz_tr_file               = Path(__file__).parent / "../../temp/mbz_tr.json"
 
 
 
-async def analyzes_entity_preserving_R2RML_mappings():
-   print(console('analyzes_entity_preserving_R2RML_mappings()'))
+# async def analyzes_entity_preserving_R2RML_mappings():
+#    print(console('analyzes_entity_preserving_R2RML_mappings()'))
 
-   rdb_schema_content = read_txt_file(rdb_schema_file)
-   r2rml_content      = read_txt_file(r2rml_file)
-   # uri_definition_content = read_txt_file(uri_definition_file)
-   # tr_patterns_content = read_txt_file(tr_patterns_file)
+#    rdb_schema_content = read_txt_file(rdb_schema_file)
+#    r2rml_content      = read_txt_file(r2rml_file)
 
-   inputs = {
-      'rdb_schema':     rdb_schema_content,
-      'r2rml_mapping':  r2rml_content, 
-      # 'uri_definition': uri_definition_content,
-      # 'tr_patterns':    tr_patterns_content
-   }
-   answer = entity_preserving_team.kickoff(inputs)
-   if answer is not None:
-      return answer
-   else:
-      return {'message': 'Fail!!'}
+#    inputs = {
+#       'rdb_schema':     rdb_schema_content,
+#       'r2rml_mapping':  r2rml_content, 
+#    }
+#    answer = entity_preserving_team.kickoff(inputs)
+#    if answer is not None:
+#       return answer
+#    else:
+#       return {'message': 'Fail!!'}
 
 
 
@@ -168,15 +168,15 @@ async def analyzes_entity_preserving_R2RML_mappings():
 
 
 
-from .tr_gen_agentic import team_answer_questions_about_people_using_ks
+# from .tr_gen_agentic import team_answer_questions_about_people_using_ks
 
 
-async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_question:str) -> str:
-   inputs = {
-      'user_question': user_question,
-   }
-   answer = team_answer_questions_about_people_using_ks.kickoff(inputs)
-   return answer 
+# async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_question:str) -> str:
+#    inputs = {
+#       'user_question': user_question,
+#    }
+#    answer = team_answer_questions_about_people_using_ks.kickoff(inputs)
+#    return answer 
 
 
 

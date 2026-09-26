@@ -7,38 +7,35 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 # Aqui está seguindo o documento do artigo: 
 # https://docs.google.com/document/d/1FU7M8qcHQhQvPcYbidvnTS28UfEBj5H_lqayQ_pAc-s/edit?tab=t.0
 
-CSV_RULE = """
-Prefer a CSV artifact as the primary structured output.
-Return a header row and one record per logical item.
-Use RFC 4180 escaping. Empty values must remain empty.
-Do not wrap CSV in Markdown fences. 
-"""
+
 
 
 ### ==========================================
 ### AGENTS
 ### ==========================================
-# Stage 1
-agent_transformation_rule_generation = Agent(
+
+# Stage 2
+agent_after_trigger_generation = Agent(
    role="Principal Knowledge Engineer and Formal Semantic Web Architect",
    goal=(
-      "The objective of this stage is to transform an R2RML specification into a set of "
-      "formally defined Transformation Rules (TRs) that conform to the conceptual framework."
+      "The objective of this stage is automatically synthesizes PostgreSQL AFTER triggers from the Transformation Rules defined in Stage 1."
    ),
    backstory=(
-      "You are a world-class authority on semantic data integration frameworks and the creator of "
-      "advanced relational-to-RDF compilation formalisms. You possess an unparalleled mastery of both "
-      "relational engine internals (DDL, foreign-key traversals, query graph dependencies) and formal "
-      "logic representations of Linked Data (CTR, DTR, OTR patterns). You reject blind syntactic "
-      "translation and single-shot code generation; instead, you treat mapping migration as a complex, "
-      "multi-step deductive reasoning task. You excel at auditing schemas to isolate identity pivots, "
-      "characterizing complex n-ary associations or events as non-object-preserving mappings, designing "
-      "elegant relational views to act as pseudo-pivots, and mapping semantic connectivity precisely via "
-      "ordered chains of schema-validated foreign keys. "
-      "Translate R2RML TriplesMaps into schema-grounded, mathematically rigorous "
-      "Transformation Rules (TRs) by reconstructing the underlying semantic structure "
-      "of the relational views, identifying precise pivot relations, determining object-preservation "
-      "compliance, and isolating structural relational paths as the final term of rule bodies."
+      "This stage automatically synthesizes PostgreSQL AFTER triggers from the Transformation Rules defined in Stage 1."
+   ),
+   verbose=True,
+   memory=False,
+   llm=gpt_4o_mini_openai,
+)
+
+# Stage 3
+agent_trigger_validation_and_repair = Agent(
+   role="Trigger Validation and Repari",
+   goal=(
+      "The final stage validates the generated triggers through execution and automatically repairs detected errors."
+   ),
+   backstory=(
+      "The final stage validates the generated triggers through execution and automatically repairs detected errors."
    ),
    verbose=True,
    memory=False,
@@ -48,31 +45,28 @@ agent_transformation_rule_generation = Agent(
 
 
 
+
+
+
+
+
+
+
+
+
 ### ==========================================
 ### TASKS
 ### ==========================================
 
-# Tasks 1 of the Stage 1
+# Tasks of the Stage 1
 # Input: Relational schema, ontology, and R2RML mappings.
 # Output: Structured metadata model describing the mappings.
 task_metadata_extraction_and_normalization = Task(
-   name="Metadata Extraction and Normalization",
-   description="""
-Metadata Extraction and Normalization.
-Analyze the relational schema, target ontology, and R2RML mappings.
-Extract logical tables, TriplesMaps, subject maps, predicate-object maps,
-URI templates, join conditions, datatype transformations, and foreign-key paths.
-Convert these heterogeneous specifications into a normalized intermediate
-representation for the following Stage 1 tasks.
+   description="""1.1 Metadata Extraction and Normalization
+   The first agent analyzes the relational schema, the target ontology, and the R2RML mappings to extract all relevant metadata, including logical tables, TriplesMaps, subject maps, predicate-object maps, URI templates, join conditions, datatype transformations, and foreign-key relationships.
 
-Inputs:
-- Relational schema: {{rdb_schema}}
-- Transformation Rules Patterns: {{tr_patterns}}
-- R2RML mappings: {{r2rml_mapping}}
 """,
-   expected_output=CSV_RULE + """Normalized metadata representation in CSV. Expected columns:
-triple_map,logical_table,subject_template,subject_class,predicate,object_source,
-object_template,datatype,language,child_column,parent_column,foreign_key""",
+   expected_output="""A CSV document whose content be a list of the transformation rules.""",
    output_file=f"temp/metadata_{date_now}.csv",
    agent=agent_transformation_rule_generation
 )
@@ -81,7 +75,8 @@ object_template,datatype,language,child_column,parent_column,foreign_key""",
 
 
 
-# Tasks 2 of the Stage 1
+
+# Tasks of the Stage 1
 task_entity_preservation_analysis = Task(
    description="""The second agent verifies whether the R2RML mappings satisfy the assumptions required by the incremental maintenance framework. In particular, it identifies pivot relations, validates URI construction functions, checks whether entity identities are preserved, analyzes relational paths, and detects constructs that violate the entity-preserving property. 
 Input: Normalized metadata representation.
@@ -93,12 +88,8 @@ Output: Entity-preservation report and recommended corrections.
    agent=agent_transformation_rule_generation
 )
 
-
-
-
-
-# Tasks 3 of the Stage 1
-task_transformation_rule_generation_validation = Task(
+# Tasks of the Stage 1
+task_transformation_rule_generation and Validation = Task(
    description="""Using the validated metadata, the third agent compiles the R2RML mappings into Transformation Rules (TRs). For each mapping, the agent identifies whether it corresponds to a Class Transformation Rule (CTR), Object Property Transformation Rule (OTR), Local Datatype Transformation Rule (Local DTR), or Path Datatype Transformation Rule (Path DTR), and generates the corresponding formal specification.
    """,
    expected_output="""A CSV document whose content be a list of the 
@@ -111,6 +102,62 @@ task_transformation_rule_generation_validation = Task(
 )
 
 
+
+#-----------------------------------------------------------------
+
+
+# Tasks of the 2
+task_trigger_planning = Task(
+   description="""The second agent verifies whether the R2RML mappings satisfy the assumptions required by the incremental maintenance framework. In particular, it identifies pivot relations, validates URI construction functions, checks whether entity identities are preserved, analyzes relational paths, and detects constructs that violate the entity-preserving property. 
+Input: Normalized metadata representation.
+Output: Entity-preservation report and recommended corrections.
+""",
+   expected_output="""A CSV document whose content be a list of the 
+   URIs.""",
+   output_file=f"temp/trigger_plan_{date_now}.csv",
+   agent=agent_after_trigger_generation
+)
+
+# Tasks of the Stage 2
+task_trigger_synthesis_static_verification = Task(
+   description="""The second agent verifies whether the R2RML mappings satisfy the assumptions required by the incremental maintenance framework. In particular, it identifies pivot relations, validates URI construction functions, checks whether entity identities are preserved, analyzes relational paths, and detects constructs that violate the entity-preserving property. 
+Input: Normalized metadata representation.
+Output: Entity-preservation report and recommended corrections.
+""",
+   expected_output="""A CSV document whose content be a list of the 
+   URIs.""",
+   output_file=f"temp/static_verification_{date_now}.csv",
+   agent=agent_after_trigger_generation
+)
+
+
+#-----------------------------------------------------------------
+
+
+# Tasks of the Stage 3
+task_test_generation = Task(
+   description="""
+""",
+   expected_output="""""",
+   output_file=f"temp/test_scenarios_{date_now}.csv",
+   agent=agent_trigger_validation_and_repair
+)
+
+task_runtime_validation = Task(
+   description="""
+""",
+   expected_output="""""",
+   output_file=f"temp/runtime_validation_{date_now}.csv",
+   agent=agent_trigger_validation_and_repair
+)
+
+task_automatic_diagnostic_and_repair = Task(
+   description="""
+""",
+   expected_output="""""",
+   output_file=f"temp/repair_report_{date_now}.csv",
+   agent=agent_trigger_validation_and_repair
+)
 
 
 # ---------------------------------------------------------
@@ -149,7 +196,7 @@ Input:
       "A list of all TriplesMap names found"
    ),
    output_file=f"temp/object_preserving_{date_now}.txt",
-   agent=agent_transformation_rule_generation
+   agent=agent_vania_r2rml_to_tr
 )
 
 
@@ -229,7 +276,7 @@ in the RDB2RDF view.
 - Prefer concise formal rules, but include enough explanation to justify the pivot relation and object-preserving classification.
 """,
    output_file=f"temp/uris_{date_now}.csv",
-   agent=agent_transformation_rule_generation
+   agent=agent_vania_r2rml_to_tr
 )
 
 
@@ -271,7 +318,7 @@ mapping_analysis_task = Task(
    ),
    output_file=f"temp/uris_{date_now}.txt",
    context=[list_triples_map_task],
-   agent=agent_transformation_rule_generation
+   agent=agent_vania_r2rml_to_tr
 )
 
 
@@ -295,7 +342,7 @@ Strict Guardrails:
       "- Justification: A concise explanation of whether or not it constitutes object preservation, according to the definition of object preservation found in the knowledge sources."
    ),
    output_file=f"temp/entity_preserving_analysis_{date_now}.txt",
-   agent=agent_transformation_rule_generation
+   agent=agent_vania_r2rml_to_tr
 )
 
 
@@ -308,7 +355,7 @@ from crewai import Crew
 
 object_preserving_team = Crew(
    agents=[
-      agent_transformation_rule_generation
+      agent_vania_r2rml_to_tr
    ],
    tasks=[
       # list_triples_map_task,
@@ -323,15 +370,70 @@ object_preserving_team = Crew(
 
 transformation_rules_team = Crew(
    agents=[
-      agent_transformation_rule_generation
+      agent_vania_r2rml_to_tr
       # r2rml_to_tr_agent,
    ],
    tasks=[
-      task_metadata_extraction_and_normalization
+      task_vania_r2rml_to_tr
       # task_parsing_and_pivoting_as_csv,
       # task_validation_of_generated_transformation_rules_csv
    ],
    process='sequential',
    # knowledge_sources=[transformation_rules_patterns], # Enable knowledge by adding the sources here
    # embedder=hf_embedder,
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ==========================================
+### Q&A TRANSFORMATION RULES PARTTERNS TEAM
+### ==========================================
+from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+
+tr_patterns_response_agent = Agent( 
+   role="Senior analyst specializing in transformation rule patterns for RDB2RDF views.", 
+   goal="Extract and report information strictly based on provided knowlegde sources.", 
+   backstory="""You are an expert analyst. Your core principle is total fidelity 
+   to knowledge sources material. You only process what is explicitly stated in the provided knowledge sources.
+   You never use outside knowledge. You are incapable of hallucination, inference, or assumption.""", 
+   verbose=True, 
+   memory=False,
+   llm=gpt_4o_mini_openai
+)
+
+
+task_answer_tr_patterns_question = Task( 
+   description=(
+      "1. Answer this specific question: '{user_question}'.\n"
+      "2. Strict Guardrails:\n"
+      "  - If the the knowledge sources does not contain the answer, you state 'Sorry...I don't know how to answer!'.\n"
+      "  - Do not add conversational filler, polite greetings, or supplementary explanations.\n"
+      "  - Do not infer transformation rules patterns not explicitly stated in the knowledge sources."
+   ), 
+   expected_output="A direct, concise sentence answering the question.", 
+   agent=tr_patterns_response_agent
+)
+
+
+# person_knowledge_source = StringKnowledgeSource(
+#    content="Renato é casado com Eliene. Ele tem os filhos Manuel Neto e Ravi."
+# )
+
+team_answer_questions_about_people_using_ks = Crew(
+   agents=[tr_patterns_response_agent],
+   tasks=[task_answer_tr_patterns_question],
+   process='sequential',
+   knowledge_sources=[knowledge_source_transformation_rule_patterns_v2]
 )
