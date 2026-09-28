@@ -1,6 +1,7 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
 from llms import gpt_4o_mini_openai
+from .model import TriplesMapParsing
 # from knowledge import object_preserving_definition_knowledge_source
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -12,6 +13,13 @@ Prefer a CSV artifact as the primary structured output.
 Return a header row and one record per logical item.
 Use RFC 4180 escaping. Empty values must remain empty.
 Do not wrap CSV in Markdown fences. 
+The output must be formatted according to the following specifications:
+- Delimiter: Use semicolon (`;`) to separate values;
+- Quoting & Escaping: Any field containing commas, line breaks, or quotation marks (such as SQL queries or transformation functions) MUST be wrapped entirely in double quotes (`"`). Internal double quotes must be escaped as `""`.
+- Raw Output Only: The output must contain ONLY the raw CSV content. Do NOT wrap the output in Markdown code blocks (e.g., ```csv), and do NOT include introductory text, explanations, or metadata footnotes.
+Always put a row for the R2RML mapping of type subjectMap:
+- For subjectMap, the mapped rdf predicate is always 'rdf:type' and mapped object is 'None'.
+Put rows for all predicateObjectMap.
 """
 
 
@@ -52,30 +60,63 @@ agent_transformation_rule_generation = Agent(
 ### TASKS
 ### ==========================================
 
+
 # Tasks 1 of the Stage 1
-# Input: Relational schema, ontology, and R2RML mappings.
-# Output: Structured metadata model describing the mappings.
 task_metadata_extraction_and_normalization = Task(
    name="Metadata Extraction and Normalization",
    description="""
-Metadata Extraction and Normalization.
-Analyze the relational schema, target ontology, and R2RML mappings.
-Extract logical tables, TriplesMaps, subject maps, predicate-object maps,
-URI templates, join conditions, datatype transformations, and foreign-key paths.
-Convert these heterogeneous specifications into a normalized intermediate
-representation for the following Stage 1 tasks.
+Analyze the Relational Schema and R2RML mappings.
+For each TriplesMap in the R2RML mappings extracts:
+- identifier of the TriplesMap;
+- table name or SQL query in the logical table (rr:logicalTable);
+- all datatype transformation functions (like UPPER, LOWER, REPLACE, SUBSTRING, etc) applied to attributes in the logical table. For example, from the `rr:logicalTable [ rr:sqlQuery \"\"\"SELECT empresa.id, UPPER(empregado.nome) AS nome FROM empresa INNER JOIN empregado ON empresa.empregado = empregado.id\"\"\" ] ;`, the transformation functions to be extracted is 'UPPER(empregado.nome)' — function and parameters. Repete the data extract for row with same triples_map_id;
+- selection conditions in an SQL query used to filter rows in a database table, employing operators such as equal to (=), not equal to (!= or <>), greater than/less than (< >), BETWEEN, IN, LIKE, IS NULL, IS NOT NULL, SIMILAR TO and all selection conditions operators known in SQL and relational database literature, as well as possible combinations thereof. Repete the data extract for row with same triples_map_id;
+- the class and template of subjecMap. If the class is not explicit included in the subjecMap, use the subjectMap class that has the same template. Example:
+   A subjectMap without an explicit class as 
+   ```rr:subjectMap lb:sm_person .
+      lb:sm_person rr:template "http://example.com/person/id" .
+   ```
+   use the class foaf:Person from the subjectMap 
+   ```rr:subjectMap [rr:class foaf:Person ;
+                    rr:template "http://example.com/person/id"] ;
+   ```, as they share the same URI rr:template "http://example.com/person/id";
+- all predicateObjectMap: the predicate, column and datatype of objectMap. The column and datatype from objectMap as string format: \"column, datatype\";
+- the foreign keys names in the Relational Schema, acording SQL join present in logical table.
 
-Inputs:
-- Relational schema: {{rdb_schema}}
+Important Requirements:
+- Analyze each TriplesMap independently.
+- Do not parse commented-out TriplesMap. Comments in R2RML start with #.
+
+Inputs: 
+- Relational Schema: {{rdb_schema}}
 - Transformation Rules Patterns: {{tr_patterns}}
 - R2RML mappings: {{r2rml_mapping}}
 """,
-   expected_output=CSV_RULE + """Normalized metadata representation in CSV. Expected columns:
-triple_map,logical_table,subject_template,subject_class,predicate,object_source,
-object_template,datatype,language,child_column,parent_column,foreign_key""",
+   expected_output=CSV_RULE + f"""Normalized metadata representation in CSV. Expected columns:
+{";".join(list(TriplesMapParsing.model_fields.keys()))}
+""",
    output_file=f"temp/metadata_{date_now}.csv",
    agent=agent_transformation_rule_generation
 )
+# task_metadata_extraction_and_normalization = Task(
+#    name="Metadata Extraction and Normalization",
+#    description="""
+# Analyze the relational schema and R2RML mappings.
+# - Extract TriplesMaps, logical tables, subject maps, predicate-object maps, URI templates, join conditions, datatype transformations, selection condition and foreign-key paths.
+# - Extract all SQL transformation functions (like as UPPER, LOWER, REPLACE, SUBSTRING, etc) applied in the logical tables. For example, from the `rr:logicalTable [ rr:sqlQuery \"\"\"SELECT empresa.id, UPPER(empregado.nome) AS nome FROM empresa INNER JOIN empregado ON empresa.empregado = empregado.id\"\"\" ] ;`, the transformation functions to be extracted is 'UPPER(empregado.nome)' — function and parameters. Repete the data extract for row with same triples_map.
+# - Repete the subject class in the row of the respective of predicate.
+# - For source R2MRL of type rr:subjectMap, the mapped rdf predicate is always 'rdf:type' and mapped object source is 'None'.
+# Inputs:
+# - Relational schema: {{rdb_schema}}
+# - Transformation Rules Patterns: {{tr_patterns}}
+# - R2RML mappings: {{r2rml_mapping}}
+# """,
+#    expected_output=CSV_RULE + f"""Normalized metadata representation in CSV. Expected columns:
+# {";".join(list(TriplesMapParsing.model_fields.keys()))}
+# """,
+#    output_file=f"temp/metadata_{date_now}.csv",
+#    agent=agent_transformation_rule_generation
+# )
 
 
 
