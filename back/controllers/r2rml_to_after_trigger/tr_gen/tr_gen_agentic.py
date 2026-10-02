@@ -5,7 +5,7 @@ from .model import TriplesMapParsing
 # from knowledge import object_preserving_definition_knowledge_source
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-# Aqui está seguindo o documento do artigo: 
+# Estou seguindo o documento do artigo: 
 # https://docs.google.com/document/d/1FU7M8qcHQhQvPcYbidvnTS28UfEBj5H_lqayQ_pAc-s/edit?tab=t.0
 
 CSV_RULE = """
@@ -86,12 +86,15 @@ agent_transformation_rule_generation = Agent(
 #    - the extracted foreign key result is 'person_fk_format'.
 
 # - From Relational Schema analyze only ALTER TABLES;
+
+
+
+
 ### ==========================================
 ### TASKS
 ### ==========================================
 
-# - only SQL query that contains at least one JOIN clause;
-# Do this only in queries that contain at least one JOIN clause.
+
 
 # Tasks 1 of the Stage 1
 task_metadata_extraction_and_normalization = Task(
@@ -171,14 +174,17 @@ Inputs:
 
 # Tasks 3 / Stage 1
 task_transformation_rule_generation_validation = Task(
-   description="""Using the validated metadata, the third agent compiles the R2RML mappings into Transformation Rules (TRs). For each mapping, the agent identifies whether it corresponds to a Class Transformation Rule (CTR), Object Property Transformation Rule (OTR), Local Datatype Transformation Rule (Local DTR), or Path Datatype Transformation Rule (Path DTR), and generates the corresponding formal specification.
+   description="""Using the validated metadata, compiles the R2RML mappings into Transformation Rules (TRs). 
+   For each mapping, the agent identifies whether it corresponds to a Class Transformation Rule (CTR), Object Property Transformation Rule (OTR), Local Datatype Transformation Rule (Local DTR), or Path Datatype Transformation Rule (Path DTR), and generates the corresponding formal specification.
+   independently validates the generated TRs, checking their semantic consistency with the original R2RML mappings, including pivot relations, relational paths, URI construction functions, predicates, and selection conditions.
+
+   Inputs: 
+   <validated metadata>{validated_metadata}</validated metadata>\n\n
    """,
-   expected_output="""A CSV document whose content be a list of the 
-   URIs.
-   Input: Validated metadata and R2RML mappings.
-   Output: Validated set of Transformation Rules.
+   expected_output="""
+   Validated set of Transformation Rules.
    """,
-   output_file=f"temp/transformation_rules_{date_now}.csv",
+   output_file=f"temp/transformation_rules_{date_now}.md",
    agent=agent_transformation_rule_generation
 )
 
@@ -392,7 +398,8 @@ object_preserving_team = Crew(
    # knowledge_sources=[object_preserving_definition_knowledge_source]
 )
 
-from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification
+from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
+from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 transformation_rules_team = Crew(
    agents=[
       agent_transformation_rule_generation
@@ -400,10 +407,12 @@ transformation_rules_team = Crew(
    ],
    tasks=[
       # task_metadata_extraction_and_normalization
-      task_entity_preservation_analysis,
-      # task_validation_of_generated_transformation_rules_csv
+      # task_entity_preservation_analysis,
+      task_transformation_rule_generation_validation,
    ],
    process='sequential',
-   knowledge_sources=[knowledge_of_formal_entity_preserving_specification], # Enable knowledge by adding the sources here
+   knowledge_sources=[
+      knowledge_of_formal_entity_preserving_specification,
+      knowledge_source_transformation_rule_patterns_v2], # Enable knowledge by adding the sources here
    # embedder=hf_embedder,
 )

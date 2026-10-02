@@ -28,7 +28,7 @@ mbz_tr_file               = Path(__file__).parent / parent_folders / "temp/mbz_t
 
 
 
-# Task 1/Stage 1
+# Task 1 / Stage 1
 async def transform_r2rml_into_transformation_rules() -> str:
    print(console('transform_r2rml_into_transformation_rules()'))
 
@@ -55,7 +55,7 @@ async def transform_r2rml_into_transformation_rules() -> str:
          return {'message': 'Fail!!'}
             
 
-# Task 2/Stage 1
+# Task 2 / Stage 1
 async def analyzes_entity_preservation_of_R2RML_mappings():
    print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
 
@@ -73,6 +73,34 @@ async def analyzes_entity_preservation_of_R2RML_mappings():
    else:
       return {'message': 'Fail!!'}
 
+
+
+# Task 3 / Stage 1
+async def transformation_rules_generation():
+   print(console('transformation_rules_generation()'))
+
+   validated_r2rml_metadata_file    = Path(__file__).parent / parent_folders / "temp/entity_preservation__2026-10-02_15-04-05.md"  
+   validated_r2rml_metadata_content = read_txt_file(validated_r2rml_metadata_file)
+   
+   inputs = {
+      'validated_metadata':  validated_r2rml_metadata_content, 
+   }
+
+   answer = transformation_rules_team.kickoff(inputs)
+   
+   if answer is not None:
+      return answer
+   else:
+      return {'message': 'Fail!!'}
+
+   
+
+
+
+
+
+
+   
 # async def generate_after_trigger(relation:str) -> str:
 #    print(console('generate_after_trigger()'))
    

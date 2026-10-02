@@ -16,7 +16,13 @@ async def compile_R2RML_to_TR():
    return await tr_gen_controller.transform_r2rml_into_transformation_rules()
 
 
+
 @router.get("/entitiy-preservation-analysis/", description="Route to Analyses Entity-Preversation from Extracted R2RML Metadata.")
 async def analyse_entity_preservation():  
    return await tr_gen_controller.analyzes_entity_preservation_of_R2RML_mappings()
 
+
+
+@router.get("/tr-gen/", description="Route to Convert R2RML mapping to Transformation Rules.")
+async def transformation_rules_generation():  
+   return await tr_gen_controller.transformation_rules_generation()
