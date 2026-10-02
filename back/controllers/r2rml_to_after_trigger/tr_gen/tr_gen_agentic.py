@@ -1,6 +1,6 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai
+from llms import gpt_4o_mini_openai, gpt_6_luna_openai
 from .model import TriplesMapParsing
 # from knowledge import object_preserving_definition_knowledge_source
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -17,9 +17,6 @@ The output must be formatted according to the following specifications:
 - Delimiter: Use semicolon (`;`) to separate values;
 - Quoting & Escaping: Any field containing commas, line breaks, or quotation marks (such as SQL queries or transformation functions) MUST be wrapped entirely in double quotes (`"`). Internal double quotes must be escaped as `""`.
 - Raw Output Only: The output must contain ONLY the raw CSV content. Do NOT wrap the output in Markdown code blocks (e.g., ```csv), and do NOT include introductory text, explanations, or metadata footnotes.
-Always put a row for the R2RML mapping of type subjectMap:
-- For subjectMap, the mapped rdf predicate is always 'rdf:type' and mapped object is 'None'.
-Put rows for all predicateObjectMap.
 """
 
 
@@ -50,54 +47,86 @@ agent_transformation_rule_generation = Agent(
    ),
    verbose=True,
    memory=False,
-   llm=gpt_4o_mini_openai,
+   llm=gpt_6_luna_openai,
 )
 
 
 
 
+
+# For each TriplesMap in the R2RML mappings extracts:
+
+
+# - the class and template of subjecMap. If the class is not explicit included in the subjecMap, use the subjectMap class that has the same template. Example:
+#    A subjectMap without an explicit class as 
+#    ```rr:subjectMap lb:sm_person .
+#       lb:sm_person rr:template "http://example.com/person/id" .
+#    ```
+#    use the class foaf:Person from the subjectMap 
+#    ```rr:subjectMap [rr:class foaf:Person ;
+#                     rr:template "http://example.com/person/id"] ;
+#    ```, as they share the same URI rr:template "http://example.com/person/id";
+# - all predicateObjectMap: the predicate, column and datatype of objectMap. The column and datatype from objectMap as string format: \"column, datatype\";
+
+# - get all tables/relations in the SQL query;
+# - for each table, get ALTER TABLEs in Relational Schema;
+# - for each ALTER TABLE extracts the foreign key (the name after ADD CONSTRAINT).
+#   For example, let the rr:logicalTable:
+#   ```rr:logicalTable [ rr:sqlQuery \"\"\"SELECT person.id, person_format.id as person_format_id 
+#        FROM person 
+#          INNER JOIN person_format ON person.format = person_format.id\"\"\" ] ;
+#    ```
+#    - the tables/relations listed from the rr:logicalTable are 'person' and 'person_format', 
+#    - the ALTER TABLE found in Relational Schema is: 
+#       ```ALTER TABLE person
+#       ADD CONSTRAINT person_fk_format
+#       FOREIGN KEY (format)
+#       REFERENCES person_format(id);
+#       ```
+#    - the extracted foreign key result is 'person_fk_format'.
+
+# - From Relational Schema analyze only ALTER TABLES;
 ### ==========================================
 ### TASKS
 ### ==========================================
 
+# - only SQL query that contains at least one JOIN clause;
+# Do this only in queries that contain at least one JOIN clause.
 
 # Tasks 1 of the Stage 1
 task_metadata_extraction_and_normalization = Task(
    name="Metadata Extraction and Normalization",
-   description="""
-Analyze the Relational Schema and R2RML mappings.
-For each TriplesMap in the R2RML mappings extracts:
-- identifier of the TriplesMap;
-- table name or SQL query in the logical table (rr:logicalTable);
+   description="""Analyze the R2RML mappings and the Relational Schema.
+For each rr:TriplesMap, extract:
+- identifier of the rr:TriplesMap;
+- SQL query or table from rr:logicalTable;
+- if SQL query contain at least one JOIN clause, the name of the CONSTRAINT in the <Relational Schema> that relates the ALTER TABLE and the REFERENCE table in each JOIN in the extracted SQL query. Never invent or create CONSTRAINT names. Do not duplicate CONTRAINTS name.
 - all datatype transformation functions (like UPPER, LOWER, REPLACE, SUBSTRING, etc) applied to attributes in the logical table. For example, from the `rr:logicalTable [ rr:sqlQuery \"\"\"SELECT empresa.id, UPPER(empregado.nome) AS nome FROM empresa INNER JOIN empregado ON empresa.empregado = empregado.id\"\"\" ] ;`, the transformation functions to be extracted is 'UPPER(empregado.nome)' — function and parameters. Repete the data extract for row with same triples_map_id;
 - selection conditions in an SQL query used to filter rows in a database table, employing operators such as equal to (=), not equal to (!= or <>), greater than/less than (< >), BETWEEN, IN, LIKE, IS NULL, IS NOT NULL, SIMILAR TO and all selection conditions operators known in SQL and relational database literature, as well as possible combinations thereof. Repete the data extract for row with same triples_map_id;
-- the class and template of subjecMap. If the class is not explicit included in the subjecMap, use the subjectMap class that has the same template. Example:
-   A subjectMap without an explicit class as 
-   ```rr:subjectMap lb:sm_person .
-      lb:sm_person rr:template "http://example.com/person/id" .
-   ```
-   use the class foaf:Person from the subjectMap 
-   ```rr:subjectMap [rr:class foaf:Person ;
-                    rr:template "http://example.com/person/id"] ;
-   ```, as they share the same URI rr:template "http://example.com/person/id";
-- all predicateObjectMap: the predicate, column and datatype of objectMap. The column and datatype from objectMap as string format: \"column, datatype\";
-- the foreign keys names in the Relational Schema, acording SQL join present in logical table.
 
 Important Requirements:
-- Analyze each TriplesMap independently.
-- Do not parse commented-out TriplesMap. Comments in R2RML start with #.
+- Analyze each rr:TriplesMap independently;
+- Do not parse commented-out R2RML mappings. Comments in R2RML start with #.
+- Never invent or create CONSTRAINT names.
+- Remove any invented or created CONSTRAINT names.
 
 Inputs: 
-- Relational Schema: {{rdb_schema}}
-- Transformation Rules Patterns: {{tr_patterns}}
-- R2RML mappings: {{r2rml_mapping}}
+<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n
+<Relational Schema>{rdb_schema}</Relational Schema>
 """,
    expected_output=CSV_RULE + f"""Normalized metadata representation in CSV. Expected columns:
-{";".join(list(TriplesMapParsing.model_fields.keys()))}
+triples_map_id,logical_table,foreign_key,datatype_transformation_function,selection_condition.
+Concatenate the CONSTRAINT names, separated by ' | ', and place them on the same line as the rr:TriplesMap.
 """,
    output_file=f"temp/metadata_{date_now}.csv",
    agent=agent_transformation_rule_generation
 )
+
+# {";".join(list(TriplesMapParsing.model_fields.keys()))}
+# Always put a row for the R2RML mapping of type rr:subjectMap:
+# - For rr:subjectMap, the mapped rdf predicate is always 'rdf:type' and mapped object is 'None'.
+# Put rows for all predicateObjectMap.
+
 # task_metadata_extraction_and_normalization = Task(
 #    name="Metadata Extraction and Normalization",
 #    description="""
@@ -122,15 +151,17 @@ Inputs:
 
 
 
-# Tasks 2 of the Stage 1
+# <Incremental Maintenance Framework>{iv_framework}</Incremental Maintenance Framework>
+# Tasks 2 / Stage 1
 task_entity_preservation_analysis = Task(
-   description="""The second agent verifies whether the R2RML mappings satisfy the assumptions required by the incremental maintenance framework. In particular, it identifies pivot relations, validates URI construction functions, checks whether entity identities are preserved, analyzes relational paths, and detects constructs that violate the entity-preserving property. 
-Input: Normalized metadata representation.
-Output: Entity-preservation report and recommended corrections.
+   description="""Verifies whether the R2RML mappings satisfy the assumptions required by the formal entity-preserving specification. 
+   In particular, it identifies pivot relations, validates URI construction functions, checks whether entity identities are preserved, analyzes relational paths, and detects constructs that violate the entity-preserving property. 
+
+Inputs: 
+<Normalized Metadada>{normalized_metadata}</Normalized Metadada>\n\n
 """,
-   expected_output="""A CSV document whose content be a list of the 
-   URIs.""",
-   output_file=f"temp/entity_preservation__{date_now}.csv",
+   expected_output="""Entity-preservation report and recommended corrections.""",
+   output_file=f"temp/entity_preservation__{date_now}.md",
    agent=agent_transformation_rule_generation
 )
 
@@ -138,7 +169,7 @@ Output: Entity-preservation report and recommended corrections.
 
 
 
-# Tasks 3 of the Stage 1
+# Tasks 3 / Stage 1
 task_transformation_rule_generation_validation = Task(
    description="""Using the validated metadata, the third agent compiles the R2RML mappings into Transformation Rules (TRs). For each mapping, the agent identifies whether it corresponds to a Class Transformation Rule (CTR), Object Property Transformation Rule (OTR), Local Datatype Transformation Rule (Local DTR), or Path Datatype Transformation Rule (Path DTR), and generates the corresponding formal specification.
    """,
@@ -361,18 +392,18 @@ object_preserving_team = Crew(
    # knowledge_sources=[object_preserving_definition_knowledge_source]
 )
 
-
+from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification
 transformation_rules_team = Crew(
    agents=[
       agent_transformation_rule_generation
       # r2rml_to_tr_agent,
    ],
    tasks=[
-      task_metadata_extraction_and_normalization
-      # task_parsing_and_pivoting_as_csv,
+      # task_metadata_extraction_and_normalization
+      task_entity_preservation_analysis,
       # task_validation_of_generated_transformation_rules_csv
    ],
    process='sequential',
-   # knowledge_sources=[transformation_rules_patterns], # Enable knowledge by adding the sources here
+   knowledge_sources=[knowledge_of_formal_entity_preserving_specification], # Enable knowledge by adding the sources here
    # embedder=hf_embedder,
 )

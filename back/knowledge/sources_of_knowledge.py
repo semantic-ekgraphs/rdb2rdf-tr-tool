@@ -2,7 +2,7 @@ from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledge
 from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource 
 
 
-knowledge_of_entity_preserving_specification = PDFKnowledgeSource(
+knowledge_of_formal_entity_preserving_specification = PDFKnowledgeSource(
    file_paths=["formal-especification-of-entity-preserving.pdf"]
 )
 

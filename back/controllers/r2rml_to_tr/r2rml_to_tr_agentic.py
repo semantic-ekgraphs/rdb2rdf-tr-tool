@@ -3,7 +3,7 @@ from crewai import Agent, Task, Crew
 from llms import gpt_4o_mini_openai
 # from knowledge.sources_of_knowledge  import transformation_rules_formalism
 # from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns
-from knowledge.sources_of_knowledge import knowledge_of_entity_preserving_specification
+from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification
 from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 # from models.task_output import TriplesMapParsing, TriplesMapParsingList
@@ -543,7 +543,7 @@ r2rml_to_tr_compilation_team = Crew(
       task_compile_parsed_r2rml_to_transformation_rules
    ],
    process = 'sequential',
-   knowledge_sources=[knowledge_of_entity_preserving_specification, 
+   knowledge_sources=[knowledge_of_formal_entity_preserving_specification, 
                       knowledge_source_transformation_rule_patterns_v2]
 )
 

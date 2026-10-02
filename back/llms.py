@@ -47,8 +47,9 @@ gpt_4o_mini_openai = LLM(
    temperature=0,
 )
 
-gpt_5_lua_openai = LLM(
-   model="openai/gpt-5-lua", 
+gpt_6_luna_openai = LLM(
+   model="openai/gpt-6-luna", 
+   reasoning_effort="medium",
    api_key=_OPENAI_API_KEY,
-   temperature=0,
+   temperature=1,
 )

@@ -28,7 +28,7 @@ mbz_tr_file               = Path(__file__).parent / parent_folders / "temp/mbz_t
 
 
 
-
+# Task 1/Stage 1
 async def transform_r2rml_into_transformation_rules() -> str:
    print(console('transform_r2rml_into_transformation_rules()'))
 
@@ -36,7 +36,7 @@ async def transform_r2rml_into_transformation_rules() -> str:
    schema_sql_content  = read_txt_file(rdb_schema_file)
    tr_patterns_content = read_txt_file(tr_patterns_file)
 
-   # These key must be the same in input_description in the Task
+   # These keys must be the same in input of the Task
    inputs = {
       'r2rml_mapping': r2rml_content, 
       'rdb_schema':    schema_sql_content,
@@ -55,7 +55,23 @@ async def transform_r2rml_into_transformation_rules() -> str:
          return {'message': 'Fail!!'}
             
 
+# Task 2/Stage 1
+async def analyzes_entity_preservation_of_R2RML_mappings():
+   print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
 
+   normalized_r2rml_metadata_file    = Path(__file__).parent / parent_folders / "temp/metadata_2026-09-28_20-40-36.csv"  
+   normalized_r2rml_metadata_content = read_txt_file(normalized_r2rml_metadata_file)
+   
+   inputs = {
+      'normalized_metadata':  normalized_r2rml_metadata_content, 
+   }
+
+   answer = transformation_rules_team.kickoff(inputs)
+   
+   if answer is not None:
+      return answer
+   else:
+      return {'message': 'Fail!!'}
 
 # async def generate_after_trigger(relation:str) -> str:
 #    print(console('generate_after_trigger()'))
@@ -130,6 +146,8 @@ async def transform_r2rml_into_transformation_rules() -> str:
 #       return answer
 #    else:
 #       return {'message': 'Fail!!'}
+
+
 
 
 

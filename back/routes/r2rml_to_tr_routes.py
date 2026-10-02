@@ -14,7 +14,9 @@ router  = APIRouter(
 @router.get("/compilation/", description="Route to R2RML-to-TR Compilation.")
 async def compile_R2RML_to_TR():  
    return await tr_gen_controller.transform_r2rml_into_transformation_rules()
-   # return await r2rml_to_tr_controller.compile_r2rml_to_trasnformation_rules_using_knowledge_sources()
-   # return await r2rml_to_tr_controller.compile_R2RML_to_Trasnformation_rules()
 
+
+@router.get("/entitiy-preservation-analysis/", description="Route to Analyses Entity-Preversation from Extracted R2RML Metadata.")
+async def analyse_entity_preservation():  
+   return await tr_gen_controller.analyzes_entity_preservation_of_R2RML_mappings()
 

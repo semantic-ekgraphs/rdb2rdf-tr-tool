@@ -15,12 +15,11 @@ class TriplesMapParsing(BaseModel):
    logical_table:           str = Field(default=None, description="Table name or SQL query in the logical table (rr:logicalTable).")
    datatype_transformation_function: Optional[str] = Field(default=None, description="All SQL datatype transformation functions (like UPPER, LOWER, REPLACE, SUBSTRING, etc) applied in the logical table")
    selection_condition:     Optional[str] = Field(default=None, description="Selection conditions in an SQL query used to filter rows in a database table, employing operators such as equal to (=), not equal to (!= or <>), greater than/less than (< >), BETWEEN, IN, LIKE, IS NULL, IS NOT NULL, SIMILAR TO and all selection conditions operators known in SQL and relational database literature, as well as possible combinations thereof.")
-   # source_r2rml_mapping:    SourceR2RMLEnum = Field(default=None, description="Source R2RML mapping is rr:subjectMap or rr:predicateObjectMap")
-   subject_class:           Optional[str] = Field(default=None, description="The RDF class of subject mapping (rr:subjectMap).")
-   subject_template:        Optional[str] = Field(default=None, description="Subject URI template defined in the subject mapping.")
-   mapped_rdf_predicate:    Optional[str] = Field(default=None, description="The mapped RDF class or property.")
-   mapped_object:           Optional[str] = Field(default=None, description="The column and datatype from object map as string format: \"column, datatype\".")
-   foreign_key:             Optional[str] = Field(default=None, description="The foreign key names.")
+   # subject_class:           Optional[str] = Field(default=None, description="The RDF class of subject mapping (rr:subjectMap).")
+   # subject_template:        Optional[str] = Field(default=None, description="Subject URI template defined in the subject mapping.")
+   # mapped_rdf_predicate:    Optional[str] = Field(default=None, description="The mapped RDF class or property.")
+   # mapped_object:           Optional[str] = Field(default=None, description="The column and datatype from object map as string format: \"column, datatype\".")
+   # foreign_key:             Optional[str] = Field(default=None, description="The foreign key names.")
 
 class TriplesMapParsingList(BaseModel):
    parsings: List[TriplesMapParsing]
