@@ -3,16 +3,12 @@ from pathlib import Path
 from datetime import datetime
 from utils import console_log, read_txt_file, write_json_after_trigger_output_file
 from .tr_gen_agentic import object_preserving_team, transformation_rules_team
-# from .entity_preserving import entity_preserving_team
-# from .workflow import transformation_rules_team
-# from .workflow import object_preserving_team
-# from .agent_trigger import ivm_trigger_crew_v2
-# from .agent_vania import team_after_trigger
+from constants import TEXTS
 
 console = lambda x: console_log("RDB2RDF CONTROLLER", x)
 parent_folders = "../../../"
 # inputs
-r2rml_file                = Path(__file__).parent / parent_folders / "temp/mbz_r2rml_short.ttl"
+r2rml_file                = Path(__file__).parent / parent_folders / "temp/mbz_r2rml_short_short.ttl"
 rdb_schema_file           = Path(__file__).parent / parent_folders / "temp/mbz_schema_short.sql"
 tr_patterns_file          = Path(__file__).parent / parent_folders / "knowledge/tr_patterns_v2.txt"
 ivm_formal_framework_file = Path(__file__).parent / parent_folders / "knowledge/ivm-formal-framework.txt"
@@ -29,8 +25,8 @@ mbz_tr_file               = Path(__file__).parent / parent_folders / "temp/mbz_t
 
 
 # Task 1 / Stage 1
-async def transform_r2rml_into_transformation_rules() -> str:
-   print(console('transform_r2rml_into_transformation_rules()'))
+async def extract_metadata() -> str:
+   print(console('extract_metadata()'))
 
    r2rml_content       = read_txt_file(r2rml_file)
    schema_sql_content  = read_txt_file(rdb_schema_file)
@@ -44,26 +40,19 @@ async def transform_r2rml_into_transformation_rules() -> str:
    }
 
    answer = transformation_rules_team.kickoff(inputs)
-
-   _return = None
-   with open(parsing_json_file, "w", encoding="utf-8") as file:
-      # ensure_ascii=False: Crucial if your data includes international characters, symbols, or emojis. This saves them natively rather than converting them to escape sequences like \u1234
-      _return = file.write(answer.raw)
-      if _return is not None:
-         return answer
-      else:
-         return {'message': 'Fail!!'}
+   
+   return answer if answer else {'message': 'Fail!!'}
             
 
 # Task 2 / Stage 1
-async def analyzes_entity_preservation_of_R2RML_mappings():
+async def analyzes_entity_preservation_in_R2RML_mappings():
    print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
 
-   normalized_r2rml_metadata_file    = Path(__file__).parent / parent_folders / "temp/metadata_2026-09-28_20-40-36.csv"  
+   normalized_r2rml_metadata_file    = Path(__file__).parent / parent_folders /  f"{TEXTS.GENERATED_DATA_FOLDER}/metadata_2026-10-05_20-08-28.md"  
    normalized_r2rml_metadata_content = read_txt_file(normalized_r2rml_metadata_file)
    
    inputs = {
-      'normalized_metadata':  normalized_r2rml_metadata_content, 
+      'extracted_metadata':  normalized_r2rml_metadata_content, 
    }
 
    answer = transformation_rules_team.kickoff(inputs)

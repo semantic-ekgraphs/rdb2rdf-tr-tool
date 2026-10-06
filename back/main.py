@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import qa_routes
-from routes import rdb2rdf_routes, r2rml_to_tr_routes
-
+from routes import rdb2rdf_routes, r2rml_to_tr_routes, tr_to_after_trigger_routes
 
 app = FastAPI()
 app.include_router(qa_routes.router)
 app.include_router(rdb2rdf_routes.router)
 app.include_router(r2rml_to_tr_routes.router)
+app.include_router(tr_to_after_trigger_routes.router)
 
 @app.get("/", tags=["Index"])
 def route_index():

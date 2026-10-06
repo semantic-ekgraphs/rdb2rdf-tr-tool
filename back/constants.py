@@ -16,6 +16,7 @@ class TEXTS:
 	METADATA = "2"
 	HOME_DIRECTORY = os.path.expanduser('~')
 	TEN_DASHES = "_" * 10
+	GENERATED_DATA_FOLDER = "gen"
 	
 class Prefixies:
 	def __init__(self): pass
@@ -39,7 +40,7 @@ TAG_DATASETS = "Datasets"
 TAG_SCHEMA = "Schema"
 TAG_AGENTIC = "Agentic"
 TAG_RDB2RDF = "RDB2RDF"
-TAG_R2RML_TO_TR = "R2RML-to-TR"
+TAG_R2RML_TO_TR = "R2RML2TR"
 TR_TO_AFTER_TRIGGER = "TR-to-AFTER-Trigger"
 TAG_QA = "Q&A"
 # REGISTRATIONS

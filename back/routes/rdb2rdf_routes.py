@@ -90,3 +90,27 @@ async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_questio
 # async def using_knowledge():  
 #    print(console('using_knowledge()'))  
 #    return await qa_controller.using_knowledge()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ==========================================
+### AI AGENT FRAMEWORK
+### ==========================================
+
+
+# STAGE 1
+@router.get("/tr_gen/", description="Route to Transformation Rules Generation")
+async def transformation_rules_generation() -> str:
+   return await rdb2rdf_controller.analyzes_entity_preserving_R2RML_mappings()

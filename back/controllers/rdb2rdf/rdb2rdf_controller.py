@@ -195,3 +195,46 @@ async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_questio
 
 # file = File(source="document.pdf")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ==========================================
+### AI AGENT FRAMEWORK
+### ==========================================
+
+# STAGE 1
+async def transformation_rules_generation() -> str:
+   print(console('transform_r2rml_to_transformation_rules()'))
+
+   r2rml_content       = read_txt_file(r2rml_file)
+   schema_sql_content  = read_txt_file(schema_sql_short_file)
+   tr_patterns_content = read_txt_file(tr_patterns_file)
+
+   # These key must be the same in input_description in the Task
+   inputs = {
+      'r2rml_mapping': r2rml_content, 
+      'rdb_schema':    schema_sql_content,
+      'tr_patterns':   tr_patterns_content
+   }
+
+   answer = transformation_rules_team.kickoff(inputs)
+
+   _return = None
+   with open(parsing_json_file, "w", encoding="utf-8") as file:
+      # ensure_ascii=False: Crucial if your data includes international characters, symbols, or emojis. This saves them natively rather than converting them to escape sequences like \u1234
+      _return = file.write(answer.raw)
+      if _return is not None:
+         return answer
+      else:
+         return {'message': 'Fail!!'}

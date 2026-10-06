@@ -7,10 +7,11 @@ from pathlib import Path
 import pandas as pd
 import json
 import csv
-from typing import List
+from typing import Any, List
 from pydantic import BaseModel, Field
+from pydantic.fields import FieldInfo
 from models.task_output import TriplesMapParsingList
-from controllers.r2rml_to_tr.model import TriplesMapParsing
+from controllers.r2rml_to_after_trigger.tr_gen.model import TriplesMapParsing
 from fastapi import UploadFile
 from constants import TXT_TEN_DASHES
 # from pydantic. import Optional
@@ -92,6 +93,29 @@ def get_descriptions_of_a_pydantic_model(dict_model):
 		new_dict += "- " + value_of_key["description"] + "\n"
 	return new_dict
 
+
+def get_prompt_of_a_pydantic_model(dict_model:dict[str, FieldInfo]):
+	"""Rerturn fields and its description of a Pydantic model"""
+	_return = ""
+	for field in dict_model.model_fields:
+		_return += f"- {dict_model.model_fields[field].description} to fill in field {field}\n"
+		if dict_model.model_fields[field].examples:
+			_return += f"\tExample: {dict_model.model_fields[field].examples}\n"
+	return _return
+
+
+
+def get_the_description_of_a_pydantic_model_key(dict_model:dict[str, FieldInfo], field:str):
+	return f'{field}: {dict_model[field].description}'
+
+
+
+
+def get_prompt_of_columns(pydantic_model:dict[str, FieldInfo]):
+	"""Return a list of columns into a Pydantic model"""
+	return f"{' '.join(list(pydantic_model.model_fields.keys()))}"
+
+# print(f'model: {cut_json_struture(MetadataRow.model_dump_json())}')
 # json packet
 # json.load(): file -> dict
 # json.loads(): str -> dict

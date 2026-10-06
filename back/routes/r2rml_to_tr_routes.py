@@ -11,18 +11,21 @@ router  = APIRouter(
    responses={404: {"description": "Not Found!"}}
 )
 
-@router.get("/compilation/", description="Route to R2RML-to-TR Compilation.")
-async def compile_R2RML_to_TR():  
-   return await tr_gen_controller.transform_r2rml_into_transformation_rules()
+@router.get("/extract-metadata/", 
+            description="Route to extract R2RML metadata.")
+async def extract_metadata():  
+   return await tr_gen_controller.extract_metadata()
 
 
 
-@router.get("/entitiy-preservation-analysis/", description="Route to Analyses Entity-Preversation from Extracted R2RML Metadata.")
-async def analyse_entity_preservation():  
-   return await tr_gen_controller.analyzes_entity_preservation_of_R2RML_mappings()
+@router.get("/entitiy-preservation-analysis/", 
+            description="Route to analyzes entity-preservation from extracted metadata.")
+async def analyzes_entity_preservation():  
+   return await tr_gen_controller.analyzes_entity_preservation_in_R2RML_mappings()
 
 
 
-@router.get("/tr-gen/", description="Route to Convert R2RML mapping to Transformation Rules.")
+@router.get("/tr-gen/", 
+            description="Route to Convert R2RML mapping to Transformation Rules.")
 async def transformation_rules_generation():  
    return await tr_gen_controller.transformation_rules_generation()
