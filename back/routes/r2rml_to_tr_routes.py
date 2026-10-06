@@ -11,7 +11,7 @@ router  = APIRouter(
    responses={404: {"description": "Not Found!"}}
 )
 
-@router.get("/extract-metadata/", 
+@router.get("/metadata-extraction/", 
             description="Route to extract R2RML metadata.")
 async def extract_metadata():  
    return await tr_gen_controller.extract_metadata()
@@ -26,6 +26,6 @@ async def analyzes_entity_preservation():
 
 
 @router.get("/tr-gen/", 
-            description="Route to Convert R2RML mapping to Transformation Rules.")
-async def transformation_rules_generation():  
-   return await tr_gen_controller.transformation_rules_generation()
+            description="Route to convert R2RML mapping to transformation r ules.")
+async def generates_transformation_rules():  
+   return await tr_gen_controller.generates_transformation_rules()

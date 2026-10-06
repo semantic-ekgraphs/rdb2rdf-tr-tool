@@ -6,20 +6,18 @@ from .tr_gen_agentic import object_preserving_team, transformation_rules_team
 from constants import TEXTS
 
 console = lambda x: console_log("RDB2RDF CONTROLLER", x)
-parent_folders = "../../../"
+parent_path = Path(__file__).parent / "../../../"
 # inputs
-r2rml_file                = Path(__file__).parent / parent_folders / "temp/mbz_r2rml_short_short.ttl"
-rdb_schema_file           = Path(__file__).parent / parent_folders / "temp/mbz_schema_short.sql"
-tr_patterns_file          = Path(__file__).parent / parent_folders / "knowledge/tr_patterns_v2.txt"
-ivm_formal_framework_file = Path(__file__).parent / parent_folders / "knowledge/ivm-formal-framework.txt"
-maintenance_queue_file    = Path(__file__).parent / parent_folders / "knowledge/maintenance-queue-infrastructure.txt"
-ontology_file             = Path(__file__).parent / parent_folders / "knowledge/ontology.txt"
-uri_definition_file       = Path(__file__).parent / parent_folders / "knowledge/uri_predicates_definition.txt"
+
+ivm_formal_framework_file = parent_path / "knowledge/ivm-formal-framework.txt"
+maintenance_queue_file    = parent_path / "knowledge/maintenance-queue-infrastructure.txt"
+ontology_file             = parent_path / "knowledge/ontology.txt"
+uri_definition_file       = parent_path / "knowledge/uri_predicates_definition.txt"
 # outputs
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-parsing_md_file           = Path(__file__).parent / parent_folders / "temp/parsing.md"
-parsing_json_file         = Path(__file__).parent / parent_folders / f"temp/parsing_r2rml_{date_now}.json"
-mbz_tr_file               = Path(__file__).parent / parent_folders / "temp/mbz_tr.json"
+parsing_md_file           = parent_path / "temp/parsing.md"
+parsing_json_file         = parent_path / f"temp/parsing_r2rml_{date_now}.json"
+mbz_tr_file               = parent_path / "temp/mbz_tr.json"
 
 
 
@@ -27,6 +25,10 @@ mbz_tr_file               = Path(__file__).parent / parent_folders / "temp/mbz_t
 # Task 1 / Stage 1
 async def extract_metadata() -> str:
    print(console('extract_metadata()'))
+
+   r2rml_file       = parent_path / "temp/mbz_r2rml_short_short.ttl"
+   rdb_schema_file  = parent_path / "temp/mbz_schema_short.sql"
+   tr_patterns_file = parent_path / "knowledge/tr_patterns_v2.txt"
 
    r2rml_content       = read_txt_file(r2rml_file)
    schema_sql_content  = read_txt_file(rdb_schema_file)
@@ -44,15 +46,17 @@ async def extract_metadata() -> str:
    return answer if answer else {'message': 'Fail!!'}
             
 
+
 # Task 2 / Stage 1
 async def analyzes_entity_preservation_in_R2RML_mappings():
    print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
-
-   normalized_r2rml_metadata_file    = Path(__file__).parent / parent_folders /  f"{TEXTS.GENERATED_DATA_FOLDER}/metadata_2026-10-05_20-08-28.md"  
-   normalized_r2rml_metadata_content = read_txt_file(normalized_r2rml_metadata_file)
+   
+   extracted_metadata_file           = parent_path /  f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata.md"  
+   
+   extracted_metadata_content           = read_txt_file(extracted_metadata_file)
    
    inputs = {
-      'extracted_metadata':  normalized_r2rml_metadata_content, 
+      'extracted_metadata':  extracted_metadata_content
    }
 
    answer = transformation_rules_team.kickoff(inputs)
@@ -65,14 +69,22 @@ async def analyzes_entity_preservation_in_R2RML_mappings():
 
 
 # Task 3 / Stage 1
-async def transformation_rules_generation():
-   print(console('transformation_rules_generation()'))
+async def generates_transformation_rules():
+   print(console('generates_transformation_rules()'))
 
-   validated_r2rml_metadata_file    = Path(__file__).parent / parent_folders / "temp/entity_preservation__2026-10-02_15-04-05.md"  
-   validated_r2rml_metadata_content = read_txt_file(validated_r2rml_metadata_file)
+   r2rml_file                        = parent_path / "temp/mbz_r2rml_short_short.ttl"
+   extracted_metadata_file           = parent_path /  f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata.md"  
+   entity_preservation_analysis_file = parent_path /  f"{TEXTS.GENERATED_DATA_FOLDER}/entity_preservation_analysis.md"  
    
+   
+   r2rml_content                        = read_txt_file(r2rml_file)
+   extracted_metadata_content           = read_txt_file(extracted_metadata_file)
+   entity_preservation_analysis_content = read_txt_file(entity_preservation_analysis_file)
+      
    inputs = {
-      'validated_metadata':  validated_r2rml_metadata_content, 
+      'r2rml_mapping': r2rml_content,
+      'validated_metadata': extracted_metadata_content, 
+      'entity_preservation_analysis': entity_preservation_analysis_content
    }
 
    answer = transformation_rules_team.kickoff(inputs)
@@ -112,7 +124,7 @@ async def transformation_rules_generation():
 #       answer = team_after_trigger.kickoff(inputs)
 #       print(f'answer: {answer}')
 
-#       trigger_json_file = Path(__file__).parent / f'../../temp/trigger_{relation}_{date_now}.json'
+#       trigger_json_file = f'../../temp/trigger_{relation}_{date_now}.json'
 #       # with open(trigger_json_file, "w", encoding="utf-8") as file_trigger_output:
 #       #    file_trigger_output.write('answer.raw')
 #       write_json_after_trigger_output_file(trigger_json_file, answer.raw)
@@ -173,8 +185,8 @@ async def transformation_rules_generation():
 #################################
 
 
-# mbz_tr_file =        Path(__file__).parent / "../../temp/parsings.json"
-# ivm_formal_framework_file =        Path(__file__).parent / "../../knowledge/ivm-formal-framework.txt"
+# mbz_tr_file =        "../../temp/parsings.json"
+# ivm_formal_framework_file =        "../../knowledge/ivm-formal-framework.txt"
 # async def generate_after_trigger_from_rdb2rdf_transformation_rules(relation:str) -> str:
 #    print(console('generate_after_trigger()'))
    
@@ -193,7 +205,7 @@ async def transformation_rules_generation():
 #       print(f'answer: {answer}')
 
 #       ### SAVE THE ANSWER WITH THE AFTER TRIGGER AS JSON IN THE \TEMP FOLDER 
-#       # trigger_json_file = Path(__file__).parent / f"../../temp/trigger_{relation}_{datetime.now()}.json"
+#       # trigger_json_file = f"../../temp/trigger_{relation}_{datetime.now()}.json"
 #       # with open(trigger_json_file, "w", encoding="utf-8") as file_of_trigger:
 #       #    file_of_trigger.write(answer.raw)
 #       write_json_after_trigger_output_file(answer.raw, relation)

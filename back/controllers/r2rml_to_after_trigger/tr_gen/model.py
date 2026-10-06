@@ -50,3 +50,16 @@ class EntityPreservationRow(BaseModel):
    relational_path: str
    issue: str = ""
    recommended_correction: str = ""
+
+
+class TransformationRuleRow(BaseModel):
+   rule_id: str
+   rule_type: str
+   pivot_relation: str
+   relevant_relations: str
+   uri_function: str
+   predicate: str = ""
+   object_function: str = ""
+   relational_path: str = ""
+   selection_condition: str = ""
+   named_graph: str = ""

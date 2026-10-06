@@ -1,25 +1,12 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai, gpt_6_luna_openai
-from .model import TriplesMapParsing
+from llms import gpt_6_luna_openai
 from models.stage1 import MetadataParsing
-from utils import get_prompt_of_a_pydantic_model
-# from knowledge import object_preserving_definition_knowledge_source
+from utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
+from constants import TEXTS
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
 # Estou seguindo o documento do artigo: 
 # https://docs.google.com/document/d/1FU7M8qcHQhQvPcYbidvnTS28UfEBj5H_lqayQ_pAc-s/edit?tab=t.0
-GENERATED_DATA_FOLDER = "gen"
-CSV_RULE = """
-Prefer a CSV artifact as the primary structured output.
-Return a header row and one record per logical item.
-Use RFC 4180 escaping. Empty values must remain empty.
-Do not wrap CSV in Markdown fences. 
-The output must be formatted according to the following specifications:
-- Delimiter: Use semicolon (`;`) to separate values;
-- Quoting & Escaping: Any field containing commas, line breaks, or quotation marks (such as SQL queries or transformation functions) MUST be wrapped entirely in double quotes (`"`). Internal double quotes must be escaped as `""`.
-- Raw Output Only: The output must contain ONLY the raw CSV content. Do NOT wrap the output in Markdown code blocks (e.g., ```csv), and do NOT include introductory text, explanations, or metadata footnotes.
-"""
 
 
 ### ==========================================
@@ -59,36 +46,38 @@ agent_transformation_rule_generation = Agent(
 ### ==========================================
 ### TASKS
 ### ==========================================
-# Tasks 1 of the Stage 1
+# Tasks 1 / Stage 1
 # No documento não está incluso o "selection condition"
+from .model import TriplesMapParsing
 task_metadata_extraction_and_normalization = Task(
    name="Metadata Extraction and Normalization",
    description=(
-"Analyze the R2RML mappings and the Relational Schema inputs.\n"
-"For each rr:TriplesMap, extract:\n"
-f"{get_prompt_of_a_pydantic_model(TriplesMapParsing)}\n\n"
-"Important Requirements:\n"
-"- Analyze each rr:TriplesMap independently;\n"
-"- Do not parse commented-out R2RML mappings. Comments in R2RML start with #.\n"
-"- Never invent or create CONSTRAINT names.\n"
-"- Remove any invented or created CONSTRAINT name.\n\n"
-"Inputs: \n"
-"<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
-"<Relational Schema>{rdb_schema}</Relational Schema>\n"
+   "Analyze the R2RML mappings and the Relational Schema inputs.\n"
+   "For each rr:TriplesMap, extract:\n"
+   f"{get_prompt_of_a_pydantic_model(TriplesMapParsing)}\n\n"
+   "Important Requirements:\n"
+   "- Analyze each rr:TriplesMap independently;\n"
+   "- Do not parse commented-out R2RML mappings. Comments in R2RML start with #.\n"
+   "- Never invent or create CONSTRAINT names.\n"
+   "- Remove any invented or created CONSTRAINT name.\n\n"
+   "Inputs: \n"
+   "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
+   "<Relational Schema>{rdb_schema}</Relational Schema>\n"
    ),
-   expected_output=("R2RML metadata report organized in the following columns:"
-f"{' '.join(list(TriplesMapParsing.model_fields.keys()))}"
-"Concatenate the CONSTRAINT names, separated by ' / '."
-),
-   output_file=f"{GENERATED_DATA_FOLDER}/metadata_{date_now}.md",
+   expected_output=(
+      "R2RML metadata report organized in the following columns:"
+      f"{' '.join(list(TriplesMapParsing.model_fields.keys()))}"
+      "Concatenate the CONSTRAINT names, separated by ' / '."
+   ),
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata.md",
    agent=agent_transformation_rule_generation
 )
 
 
 
-from .model import EntityPreservationRow
-# <Incremental Maintenance Framework>{iv_framework}</Incremental Maintenance Framework>
+
 # Tasks 2 / Stage 1
+from .model import EntityPreservationRow
 task_entity_preservation_analysis = Task(
    description=(
 "Verifies whether the R2RML mappings, in <Extracted Metadada> input, satisfy the assumptions required by "
@@ -108,7 +97,7 @@ task_entity_preservation_analysis = Task(
       "Entity-preservation report and recommended corrections in the following columns:"
       f"{' '.join(list(EntityPreservationRow.model_fields.keys()))}"
    ),
-   output_file=f"{GENERATED_DATA_FOLDER}/entity_preservation__{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/entity_preservation_analysis.md",
    agent=agent_transformation_rule_generation
 )
 
@@ -117,208 +106,31 @@ task_entity_preservation_analysis = Task(
 
 
 # Tasks 3 / Stage 1
+from .model import TransformationRuleRow
 task_transformation_rule_generation_validation = Task(
-   description="""Using the validated metadata, compiles the R2RML mappings into Transformation Rules (TRs). 
-   For each mapping, the agent identifies whether it corresponds to a Class Transformation Rule (CTR), Object Property Transformation Rule (OTR), Local Datatype Transformation Rule (Local DTR), or Path Datatype Transformation Rule (Path DTR), and generates the corresponding formal specification.
-   independently validates the generated TRs, checking their semantic consistency with the original R2RML mappings, including pivot relations, relational paths, URI construction functions, predicates, and selection conditions.
-
-   Inputs: 
-   <validated metadata>{validated_metadata}</validated metadata>\n\n
-   """,
-   expected_output="""
-   Validated set of Transformation Rules.
-   """,
-   output_file=f"{GENERATED_DATA_FOLDER}/transformation_rules_{date_now}.md",
-   agent=agent_transformation_rule_generation
-)
-
-
-
-
-# ---------------------------------------------------------
-# Adaptado por mim
-# Arquivos fonte passados dinamicamente no kickoff como strings/contexto
-inputs_context_object_preserving = """
-Input Thecnical Context:
-- Transformation Rules Patterns: {tr_patterns}
-- R2RML mappings: {r2rml_mapping}
-- Relational Database Schema: {rdb_schema}
-- URI Predicates Definition: {uri_definition}
-"""
-# - Consider the Relational Database Schema, delimited by <rdb_schema></rdb_schema>,
-# to identify pivot relations, joins, foreign-key paths and more:
-#    <rdb_schema>{rdb_schema}<rdb_schema>
-   
-# - Consider the R2RML mappings delimited by <r2rml>:
-# <r2rml>{r2rml_mapping}</r2rml>.
-
-# - Consider the revised URI Predicates Definition delimited by <uri_predicates_definition> tag: 
-# <uri_predicates_definition>{uri_definition}</uri_predicates_definition>.
-
-
-list_triples_map_task = Task(
-   description="""
-      Extract all 'rr:TriplesMap' instances from the R2RML mappings below. 
-List only the resource names (e.g., subjects defined with 'a' or 'rdf:type rr:TriplesMap'). 
-Exclude any statements lacking these properties.
-
-Input:
-<R2RML mappings>
-{r2rml_mapping}
-</R2RML mappings>
-   """,
-   expected_output=(
-      "A list of all TriplesMap names found"
-   ),
-   output_file=f"temp/object_preserving_{date_now}.txt",
-   agent=agent_transformation_rule_generation
-)
-
-
-object_preserving_analysis_task = Task(
-   description="""Analyze each R2RML mapping to determine whether it satisfies the entity-preserving property. 
-If so, identify the pivot relation and derive the URI predicate responsible for generating 
-the RDF resource identifiers. 
-
-
-Phase 1: Object-preserving R2RML Mappings
-An R2RML mapping is object-preserving when each RDF resource representing an instance of a class 
-corresponds to exactly one tuple of a designated relation in the source schema, called the pivot relation, 
-and each pivot tuple generates at most one RDF resource. In other words, the mapping preserves 
-the identity of relational entities in the RDF view.
-
-This interpretation is particularly natural in the context of schema mappings between 
-relational databases and RDF. The purpose of such mappings is to establish semantic correspondences 
-between constructs of the relational schema and constructs of the RDF vocabulary:
-entity relations are mapped to RDF classes;
-relationships are mapped to object properties;
-attributes are mapped to datatype properties.
-
-Consequently, the mapping is expected to preserve the identity of the entities already represented 
-in the relational schema, rather than creating new entities through aggregation, grouping, or other 
-analytical transformations. Each RDF instance therefore represents an existing relational entity, 
-identified by a single pivot tuple, even when some of the values required to construct its URI 
-are obtained from related tuples.
-
-Although the R2RML language allows arbitrary SQL queries in logical tables, including queries involving 
-GROUP BY, DISTINCT, UNION, or aggregation, such mappings generally define derived analytical views rather 
-than semantic correspondences between relational entities and RDF classes. Therefore, while such mappings 
-are valid R2RML specifications, they fall outside the scope of entity-preserving RDB2RDF mappings, which 
-are the focus of the proposed framework.
-For this reason, the transformation-rule formalism adopted in this work deliberately assumes 
-object-preserving mappings. This assumption establishes a one-to-one correspondence between pivot tuples 
-and RDF resources, which is the fundamental property on which the incremental maintenance theory and its 
-correctness proofs are built. 
-
-Antes mesmo de gerar as TRs, a LLM (ou um analisador) verifica se o mapeamento R2RML é object preserving:
-existe uma pivot relation?
-cada recurso RDF corresponde a exatamente uma tupla pivot?
-não há agregações, GROUP BY, DISTINCT, UNION ou outras construções que eliminem a correspondência 1:1?
-a definição da URI é funcionalmente determinada pela tupla pivot (mesmo que utilize atributos alcançados 
-por caminhos PK/FK)?
-The proposed compilation process assumes that the input R2RML specification is entity-preserving. 
-If this assumption is violated, the problem is not merely syntactic but conceptual. In such cases, there 
-is no semantics-preserving compilation into Transformation Rules, since the correspondence between 
-relational entities and RDF resources is no longer one-to-one. Therefore, such mappings should be 
-detected and reported for human analysis rather than automatically transformed by the compiler.
-
-Identificação da Pivot relation
-
-Um mapeamento R2RML é object preserving se pode ser associado com uma pivot relation.  
-Nesse caso deve ser identificado qual a “pivot relation” do R2RML,  para depois então gerar a TRs usando 
-a pivot relation. 
-
-A pergunta que se deve fazer é: 
-considerando um mapeamento R2RML, Existe uma relação R tal que cada tupla de R gera exatamente um recurso 
-RDF e vice-versa?
-Se existe a relação R, então pode ser definida uma CTR Ψ that maps tuples of a pivot relation 𝑅 into RDF 
-instances of a class 𝐶. It establishes a semantic correspondence between a pivot tuple 𝑟 and an RDF 
-resource 𝑥, such that each pivot tuple is associated with at most one RDF instance, and distinct pivot 
-tuples generate distinct RDF resources. Thus, the mapping preserves the identity of relational entities 
-in the RDB2RDF view. 
-""",
-   expected_output="""A CSV document whose content be a list of the 
-   genereted URIs.   
-
-   IMPORTANT INSTRUCTIONS:
-- Do not invent relations or attributes that are not present in the R2RML.
-- use the foreign keys to define relational paths
-- Use the actual SQL joins in the R2RML mappings.
-- Preserve the semantics of the R2RML mapping..
-- When a literal value is produced from a column, use RDFLiteral or an equivalent built-in.
-- When a value is transformed, such as LOWER, REPLACE, LIKE, or SIMILAR TO, represent this using auxiliary built-ins.
-- Clearly separate clean object-preserving mappings from mappings that require adaptation.
-- Prefer concise formal rules, but include enough explanation to justify the pivot relation and object-preserving classification.
-""",
-   output_file=f"temp/uris_{date_now}.csv",
-   agent=agent_transformation_rule_generation
-)
-
-
-mapping_analysis_task = Task(
    description=(
-      "Analyze provided R2RML mapping in the <R2RML_mappings> to determine if each rr:TriplesMap is 'object-preserving'.\n\n"
-      "Criteria for an object-preserving mapping:\n"
-      "- A single 'pivot relation' must exist where each tuple generates exactly one RDF resource and vice versa.\n"
-      "- The mapping must NOT contain aggregations (e.g., GROUP BY, DISTINCT, UNION) that break the 1:1 correspondence.\n"
-      "- The URI generation must be functionally determined by the pivot tuple, even if attributes are retrieved via PK/FK paths.\n\n"
-      "Instructions:\n"
-      "0. Evaluate all rr:TriplesMap counted in the task output before.\n"
-      "1. Evaluate if each rr:TriplesMap satisfies the above criteria.\n"
-      "2. If it is NOT object-preserving, report it as a violation for human analysis.\n"
-      "3. If it IS object-preserving, identify the pivot relation and the URI predicate responsible for resource identification.\n"
-      "4. If it IS object-preserving, generate the URI predicates and hasURI following the URI Predicates Definition taking the included example 1 and example 2.\n\n"
-      "5. Consider the Transformation Rules Patterns in the context input.\n\n"
-      "Input Thecnical Context:\n"
-      "<R2RML_mappings>"
-      "{r2rml_mapping}" \
-      "</R2RML_mappings>\n"
-      "<Transformation Rules Patterns>"
-      "{tr_patterns}" \
-      "</Transformation Rules Patterns>\n"
-      "<Relational Database Schema>"
-      "{rdb_schema}" \
-      "</Relational Database Schema>\n"
-      "<URI Predicates Definition>"
-      "{uri_definition}" \
-      "</URI Predicates Definition>"
+   "Using the validated metadata, compiles the R2RML mappings into Transformation Rules (TRs). "
+   "For each mapping, the agent identifies whether it corresponds to a Class Transformation Rule (CTR), "
+   "Object Property Transformation Rule (OTR), Local Datatype Transformation Rule (Local DTR), or "
+   "Path Datatype Transformation Rule (Path DTR), and generates the corresponding formal specification."
+   "Independently validates the generated TRs, checking their semantic consistency with the original "
+   "R2RML mappings, including pivot relations, relational paths, URI construction functions, "
+   "predicates, and selection conditions."
+
+   "Inputs: "
+   "<validated metadata>{validated_metadata}</validated metadata>\n\n"
+   "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
+   "<entity_preservation_analysis>{entity_preservation_analysis}<entity_preservation_analysis>"
    ),
    expected_output=(
-      "A structured analysis report containing for all rr:TriplesMap counted in the task output before:\n"
-      "- Boolean status: Is the mapping object-preserving? (Yes/No)\n"
-      "- Pivot Relation: [Name of the relation, or 'None']\n"
-      "- URI Predicate: [URI term map or predicate used for identification]\n"
-      "- hasURI: [function]\n"
-      "- Justification: A concise explanation of why it passed or failed the criteria."
+      "Validated set of Transformation Rules in the following columns:"
+      f"{get_prompt_of_columns(TransformationRuleRow)}"
    ),
-   output_file=f"temp/uris_{date_now}.txt",
-   context=[list_triples_map_task],
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/transformation_rules.md",
    agent=agent_transformation_rule_generation
 )
 
 
-task_extract_entity_preserving = Task(
-   description="""Analyze each R2RML mappings below.
-Write the resource names (e.g., subjects defined with 'a' or 'rdf:type rr:TriplesMap') and 
-'Yes' next to the name of 'rr:TriplesMap' if the mapping preserves the tuple entity, or 'No' if it does not.
-Justify observing the definition of the object-preserving strictly based on provided knowlegde sources.
-Input:
-<R2RML mappings>
-{r2rml_mapping}
-</R2RML mappings>
-   
-Strict Guardrails:
-   - If no TriplesMap is found, simply write 'Not Found'.
-   """,
-   expected_output=(
-      "A structured analysis report containing for all 'rr:TriplesMap'\n"
-      "- Boolean status: Is the mapping object-preserving? (Yes/No)\n"
-      "- TriplesMap: name of TriplesMap\n"
-      "- Justification: A concise explanation of whether or not it constitutes object preservation, according to the definition of object preservation found in the knowledge sources."
-   ),
-   output_file=f"temp/entity_preserving_analysis_{date_now}.txt",
-   agent=agent_transformation_rule_generation
-)
 
 
 
@@ -334,7 +146,7 @@ object_preserving_team = Crew(
    ],
    tasks=[
       # list_triples_map_task,
-      task_extract_entity_preserving,
+      # task_extract_entity_preserving,
       # mapping_analysis_task
       # object_preserving_analysis_task,
    ],
@@ -351,8 +163,8 @@ transformation_rules_team = Crew(
    ],
    tasks=[
       # task_metadata_extraction_and_normalization
-      task_entity_preservation_analysis,
-      # task_transformation_rule_generation_validation,
+      # task_entity_preservation_analysis,
+      task_transformation_rule_generation_validation,
    ],
    process='sequential',
    knowledge_sources=[
