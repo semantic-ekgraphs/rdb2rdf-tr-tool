@@ -12,7 +12,7 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ### ==========================================
 ### AGENTS | STAGE 1
 ### ==========================================
-agent_transformation_rule_generation = Agent(
+transformation_rule_generation_agent = Agent(
    role="Principal Knowledge Engineer and Formal Semantic Web Architect",
    goal=(
       "The objective of this stage is to transform an R2RML specification into a set of "
@@ -39,7 +39,7 @@ agent_transformation_rule_generation = Agent(
 )
 
 
-tr_reviewer_agent = Agent(
+transformation_rule_validation_agent = Agent(
    role="Transformation Rules Semantic Validation & Review Specialist",
    goal=(
       "Independently audit and validate generated Transformation Rules (TRs) to guarantee "
@@ -91,7 +91,7 @@ task_metadata_extraction_and_normalization = Task(
       "Concatenate the CONSTRAINT names, separated by ' | '."
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata_{date_now}.md",
-   agent=agent_transformation_rule_generation
+   agent=transformation_rule_generation_agent
 )
 
 
@@ -127,7 +127,7 @@ task_entity_preservation_analysis = Task(
       ""
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/entity_preservation_analysis_{date_now}.md",
-   agent=agent_transformation_rule_generation
+   agent=transformation_rule_generation_agent
 )
 
 
@@ -183,7 +183,7 @@ For each processed R2RML mapping:
 *(Repeat for all generated rules)*
 """,
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/transformation_rules_{date_now}.md",
-   agent=agent_transformation_rule_generation
+   agent=transformation_rule_generation_agent
 )
 
 
@@ -236,7 +236,7 @@ The finalized, fully verified set of formal Transformation Rules ready for downs
 """,
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/validated_transformation_rules_{date_now}.md",
    context=[task_transformation_rule_generation],  # Explicit dependency on Task 1
-   agent=tr_reviewer_agent
+   agent=transformation_rule_validation_agent
 )
 
 
@@ -258,7 +258,7 @@ from crewai import Crew
 
 object_preserving_team = Crew(
    agents=[
-      agent_transformation_rule_generation
+      transformation_rule_generation_agent
    ],
    tasks=[
       # list_triples_map_task,
@@ -274,7 +274,7 @@ from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving
 from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 transformation_rules_team_task_1 = Crew(
    agents=[
-      agent_transformation_rule_generation
+      transformation_rule_generation_agent
    ],
    tasks=[
       task_metadata_extraction_and_normalization
@@ -288,7 +288,7 @@ transformation_rules_team_task_1 = Crew(
 
 transformation_rules_team_task_2 = Crew(
    agents=[
-      agent_transformation_rule_generation
+      transformation_rule_generation_agent
    ],
    tasks=[
       task_entity_preservation_analysis
@@ -302,7 +302,7 @@ transformation_rules_team_task_2 = Crew(
 
 transformation_rules_team_task_3 = Crew(
    agents=[
-      agent_transformation_rule_generation
+      transformation_rule_generation_agent
    ],
    tasks=[
       task_transformation_rule_generation,

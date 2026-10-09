@@ -13,7 +13,7 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ### AGENTS of STAGE 2
 ### ==========================================
 
-agent_after_trigger_generation = Agent(
+after_trigger_generation_agent = Agent(
    role="PostgreSQL IVM Trigger Planning and Synthesis Specialist",
    goal=(
       "Synthesize production-grade, statically verified PostgreSQL AFTER triggers "
@@ -121,7 +121,7 @@ task_trigger_planning = Task(
       f"{get_prompt_of_columns(TriggerPlanRow)})*"
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/trigger_execution_plan_{date_now}.md",
-   agent=agent_after_trigger_generation
+   agent=after_trigger_generation_agent
 )
 
 
@@ -144,7 +144,7 @@ task_trigger_synthesis = Task(
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/after_trigger_{date_now}.md",
    # context=[task_trigger_planning],
-   agent=agent_after_trigger_generation
+   agent=after_trigger_generation_agent
 )
 
 
@@ -271,7 +271,7 @@ from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
 
 after_trigger_gen_team = Crew(
    agents=[
-      agent_after_trigger_generation,
+      after_trigger_generation_agent,
       # agent_ivm_critic
    ],
    tasks=[
