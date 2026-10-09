@@ -1,0 +1,253 @@
+import json
+from pathlib import Path
+from datetime import datetime
+from src.utils import console_log, read_txt_file, write_json_after_trigger_output_file
+from src.utils import get_path_of_file, get_path_of_generated_file, get_path_of_file_from_knowledge, get_path_of_file_from_temp
+from .tr_gen_agentic import object_preserving_team, transformation_rules_team_task_1
+from .tr_gen_agentic import transformation_rules_team_task_2, transformation_rules_team_task_3
+from src.constants import TEXTS
+
+date_now    = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+console     = lambda x: console_log("RDB2RDF CONTROLLER", x)
+parent_path = Path(__file__).parent / "../../../../"
+parent_path_gen = Path(__file__).parent / "../../../"
+
+ivm_formal_framework_file = get_path_of_file_from_knowledge("knowledge/ivm-formal-framework.txt")
+maintenance_queue_file    = get_path_of_file_from_knowledge("knowledge/maintenance-queue-infrastructure.txt")
+ontology_file             = get_path_of_file_from_knowledge("knowledge/ontology.txt")
+uri_definition_file       = get_path_of_file_from_knowledge("knowledge/uri_predicates_definition.txt")
+# outputs
+parsing_md_file           = get_path_of_file_from_temp("parsing.md")
+parsing_json_file         = get_path_of_file_from_temp(f"parsing_r2rml_{date_now}.json")
+mbz_tr_file               = get_path_of_file_from_temp("mbz_tr.json")
+
+
+
+
+### ==========================================
+### TASK 1 | STAGE 1
+### ==========================================
+async def extract_metadata() -> str:
+   print(console('extract_metadata()'))
+
+   r2rml_file      = get_path_of_file_from_temp("temp/mbz_r2rml_short_short.ttl")
+   rdb_schema_file = get_path_of_file_from_temp("temp/mbz_schema_short.sql")
+
+   r2rml_content      = read_txt_file(r2rml_file)
+   schema_sql_content = read_txt_file(rdb_schema_file)
+
+   # These keys must be the same in input of the Task
+   inputs = {
+      'r2rml_mapping': r2rml_content, 
+      'rdb_schema':    schema_sql_content,
+   }
+
+   answer = transformation_rules_team_task_1.kickoff(inputs)
+   
+   return answer if answer else {'message': 'Fail!!'}
+            
+
+
+### ==========================================
+### TASK 2 | STAGE 1
+# Pelo que entendi, 1.1 e 1.2 são complementares.
+### ==========================================
+async def analyzes_entity_preservation():
+   print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
+   
+   extracted_metadata_file           = get_path_of_generated_file("extracted_metadata.md")
+   entity_preservation_analysis_file = get_path_of_generated_file("entity_preservation_analysis.md")
+   
+   extracted_metadata_content           = read_txt_file(extracted_metadata_file)
+   entity_preservation_analysis_content = read_txt_file(entity_preservation_analysis_file)
+   
+   inputs = {
+      'extracted_metadata':           extracted_metadata_content,
+      'entity_preservation_analysis': entity_preservation_analysis_content
+   }
+
+   answer = transformation_rules_team_task_2.kickoff(inputs)
+   
+   if answer is not None:
+      return answer
+   else:
+      return {'message': 'Fail!!'}
+
+
+
+### ==========================================
+### TASK 3 | STAGE 1
+### ==========================================
+async def generates_transformation_rules():
+   print(console('generates_transformation_rules()'))
+
+   r2rml_file                        = parent_path / "temp/mbz_r2rml_short_short.ttl"
+   extracted_metadata_file           = parent_path_gen /  f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata.md"  
+   entity_preservation_analysis_file = parent_path_gen /  f"{TEXTS.GENERATED_DATA_FOLDER}/entity_preservation_analysis.md"  
+   
+   
+   r2rml_content                        = read_txt_file(r2rml_file)
+   extracted_metadata_content           = read_txt_file(extracted_metadata_file)
+   entity_preservation_analysis_content = read_txt_file(entity_preservation_analysis_file)
+      
+   inputs = {
+      'r2rml_mapping': r2rml_content,
+      'validated_metadata': extracted_metadata_content, 
+      'entity_preservation_analysis': entity_preservation_analysis_content
+   }
+
+   answer = transformation_rules_team_task_3.kickoff(inputs)
+   
+   if answer is not None:
+      return answer
+   else:
+      return {'message': 'Fail!!'}
+
+   
+
+
+
+
+
+
+   
+# async def generate_after_trigger(relation:str) -> str:
+#    print(console('generate_after_trigger()'))
+   
+#    ivm_formal_framework_content = read_txt_file(ivm_formal_framework_file)
+#    maintenance_queue_content    = read_txt_file(maintenance_queue_file)
+#    schema_sql_content           = read_txt_file(schema_sql_short_file)
+#    ontology_content             = read_txt_file(ontology_file)
+#    with open(mbz_tr_file, 'r', encoding='utf-8') as file:
+#       mbz_tr_content = json.load(file)
+
+#       inputs = {
+#          'ivm_formal_framework':             ivm_formal_framework_content,
+#          'musicbrainz_schema':               schema_sql_content,
+#          'mb_trs_source':                    mbz_tr_content,
+#          'musicbrainz_ontology':             ontology_content,
+#          'maintenance_queue_infrastructure': maintenance_queue_content,
+#          'relation':                         relation
+#       }
+
+#       answer = team_after_trigger.kickoff(inputs)
+#       print(f'answer: {answer}')
+
+#       trigger_json_file = f'../../temp/trigger_{relation}_{date_now}.json'
+#       # with open(trigger_json_file, "w", encoding="utf-8") as file_trigger_output:
+#       #    file_trigger_output.write('answer.raw')
+#       write_json_after_trigger_output_file(trigger_json_file, answer.raw)
+#       return 'answer'
+
+
+
+
+
+# async def object_preserving_analysis() -> str:
+#    print(console('object_preserving_analysis()'))
+
+#    # schema_sql_content     = read_txt_file(schema_sql_short_file)
+#    r2rml_content    = read_txt_file(r2rml_file)
+#    # uri_definition_content = read_txt_file(uri_definition_file)
+#    # tr_patterns_content = read_txt_file(tr_patterns_file)
+
+#    inputs = {
+#       # 'rdb_schema':     schema_sql_content,
+#       'r2rml_mapping':  r2rml_content, 
+#       # 'uri_definition': uri_definition_content,
+#       # 'tr_patterns':    tr_patterns_content
+#    }
+
+#    answer = object_preserving_team.kickoff(inputs)
+   
+#    if answer is not None:
+#       return answer
+#    else:
+#       return {'message': 'Fail!!'}
+
+
+
+
+
+# async def analyzes_entity_preserving_R2RML_mappings():
+#    print(console('analyzes_entity_preserving_R2RML_mappings()'))
+
+#    rdb_schema_content = read_txt_file(rdb_schema_file)
+#    r2rml_content      = read_txt_file(r2rml_file)
+
+#    inputs = {
+#       'rdb_schema':     rdb_schema_content,
+#       'r2rml_mapping':  r2rml_content, 
+#    }
+#    answer = entity_preserving_team.kickoff(inputs)
+#    if answer is not None:
+#       return answer
+#    else:
+#       return {'message': 'Fail!!'}
+
+
+
+
+
+#################################
+### TRIGGERS TEAM
+#################################
+
+
+# mbz_tr_file =        "../../temp/parsings.json"
+# ivm_formal_framework_file =        "../../knowledge/ivm-formal-framework.txt"
+# async def generate_after_trigger_from_rdb2rdf_transformation_rules(relation:str) -> str:
+#    print(console('generate_after_trigger()'))
+   
+#    with open(ivm_formal_framework_file, "r", encoding="utf-8") as file4:
+#       ivm_formal_framework_content = file4.read()
+
+#       inputs = {
+#          'ivm_formal_framework': ivm_formal_framework_content,
+#          'musicbrainz_schema':     None,
+#          'mb_trs_source':          None,
+#          'musicbrainz_ontology':   None,
+#          'relation': relation
+#       }
+
+#       answer = ivm_trigger_crew_v2.kickoff(inputs)
+#       print(f'answer: {answer}')
+
+#       ### SAVE THE ANSWER WITH THE AFTER TRIGGER AS JSON IN THE \TEMP FOLDER 
+#       # trigger_json_file = f"../../temp/trigger_{relation}_{datetime.now()}.json"
+#       # with open(trigger_json_file, "w", encoding="utf-8") as file_of_trigger:
+#       #    file_of_trigger.write(answer.raw)
+#       write_json_after_trigger_output_file(answer.raw, relation)
+#       return answer
+
+   # return "transform_transformation_rules_in_after_trigger"
+
+
+
+# from .tr_gen_agentic import team_answer_questions_about_people_using_ks
+
+
+# async def answer_transformation_rules_patterns_for_rdb2rdf_question(user_question:str) -> str:
+#    inputs = {
+#       'user_question': user_question,
+#    }
+#    answer = team_answer_questions_about_people_using_ks.kickoff(inputs)
+#    return answer 
+
+
+
+
+
+
+
+
+# from crewai_files import File, ImageFile, PDFFile, AudioFile, VideoFile, TextFile
+
+# image = ImageFile(source="screenshot.png")
+# pdf = PDFFile(source="report.pdf")
+# audio = AudioFile(source="meeting.mp3")
+# video = VideoFile(source="demo.mp4")
+# text = TextFile(source="data.csv")
+
+# file = File(source="document.pdf")
+
