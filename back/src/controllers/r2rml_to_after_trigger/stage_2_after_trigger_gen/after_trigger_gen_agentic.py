@@ -13,7 +13,7 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ### AGENTS of STAGE 2
 ### ==========================================
 
-after_trigger_generation_agent = Agent(
+trigger_generation_agent = Agent(
    role="PostgreSQL IVM Trigger Planning and Synthesis Specialist",
    goal=(
       "Synthesize production-grade, statically verified PostgreSQL AFTER triggers "
@@ -46,7 +46,7 @@ after_trigger_generation_agent = Agent(
 )
 
 
-agent_ivm_critic = Agent(
+ivm_critic_agent = Agent(
    role="PostgreSQL IVM Static Verification & Code Auditor Agent",
    goal=(
       "Perform rigorous static verification on generated PostgreSQL AFTER triggers to ensure "
@@ -83,10 +83,10 @@ agent_ivm_critic = Agent(
 from .model import TriggerPlanRow
 task_trigger_planning = Task(
    description=(
-      "Analyze the set of Transformation Rules inputed "
-      "to determine the required incremental maintenance strategy for each database relation $R$, "
+      "Analyze the set of transformation rules "
+      "to determine the incremental maintenance strategy required for each database pivot relation $R$ present in the compiled transformation rules "
       "without generating SQL code at this stage.\n\n"
-      "For each updated pivot relation $R$, you must:\n"
+      "For each pivot relation $R$, you must:\n"
       "1. Compute the set $Relev(R)$ of all relevant Transformation Rules.\n"
       "2. Classify each rule in the set as 'pivot-relevant' or 'relation-relevant'.\n"
       "3. Identify whether multiple occurrences of relation $R$ exist in the rule's relational path.\n"
@@ -115,137 +115,125 @@ task_trigger_planning = Task(
       "- **Post-Update Contributions ($S2$)**: Mapping of the post-update state V2 to validate stability and resource support.\n"
       "- **Deletion and Insertion Changesets ($\Delta^-$ and $\Delta^+$)**: Definition of the final RDF triples/quads deltas to be recorded in the queue.\n"
       "---"
-      "*(Repeat the structure above for all relations R present in the relational schema in the following columns:"
+      "*(Repeat the structure above for all relations R present in the transformation rules in the following columns:"
       f"{get_prompt_of_columns(TriggerPlanRow)})*"
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/trigger_execution_plan_{date_now}.md",
-   agent=after_trigger_generation_agent
+   agent=trigger_generation_agent
 )
 
 
 
-# Tasks 2 | Stage 2
+### ==========================================
+### TASK 2 | STAGE 2
+### ==========================================
 from .model import StaticVerificationRow
-task_trigger_synthesis = Task(
+trigger_synthesis_task = Task(
    description=(
-      "Based on the trigger execution plan, generates PostgreSQL AFTER triggers "
-      "implementing the incremental maintenance algorithm described in Algorithm 1. "
-      "The generated triggers use statement-level transition tables, compute the required maintenance structures, "
-      "and populate the asynchronous maintenance queue.\n\n" 
-
-      "Input:\n"
+      "Based on the provided declarative trigger execution plan and Transformation Rules, "
+      "generate the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions.\n\n"
+      "Input Context Required:\n"
+      "- Declarative trigger execution plan (from Stage 2.1)\n"
+      "- Transformation Rules (from Stage 1)\n\n"
       "<trigger execution plan>{trigger_execution_plan}\n</trigger execution plan>\n\n"
       "<Transformation Rules>{transformation_rules}\n</Transformation Rules>"
-   ),
-   expected_output=(
-      "Statistically verified PostgreSQL AFTER triggers"
-   ),
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/after_trigger_{date_now}.md",
-   # context=[task_trigger_planning],
-   agent=after_trigger_generation_agent
-)
-
-
-
-# Tasks 3 | Stage 2
-from .model import StaticVerificationRow
-# task_trigger_static_verification = Task(
-#    description=(
-#       "After generation, performs static verification. "
-#       "Instead of executing the code, it checks whether the generated implementation conforms to the "
-#       "formal specification. The validation includes verification of:"
-#       "- correct identification of (Relev(R));"
-#       "- correct computation of (A^{-}), (A^{+}), (S2), (\Delta^{+}{pivot}), (\Delta^{+}{rel}), and (\Delta^{+});"
-#       "- correct URI construction functions and named graphs;"
-#       "- correct relational joins and predicates;"
-#       "- proper use of PostgreSQL transition tables; and"
-#       "- absence of hallucinated attributes, predicates, relations, or transformation rules."
-      
-#       "When inconsistencies are detected, the synthesis agent receives structured feedback and regenerates only the affected components."
-      
-#       "Input:"
-#       "<trigger execution plan>{trigger_execution_plan}</trigger execution plan>\n\n"
-#       "<Transformation Rules>{transformation_rules}</Transformation Rules>"
-#    ),
-#    expected_output=(
-#       "Statistically verified PostgreSQL AFTER triggers in the following columns:"
-#       f"{get_prompt_of_columns(StaticVerificationRow)})*"
-#    ),
-#    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/after_trigger_{date_now}.md",
-#    # context=[task_trigger_planning],
-#    agent=agent_ivm_critic
-# )
-
-
-
-
-
-task_trigger_static_verification = Task(
-   description=(
-      "Perform a thorough static verification on the generated PostgreSQL AFTER triggers "
-      "to ensure strict conformance with the formal IVM specification without executing the code.\n\n"
-      "Input Context Required:\n"
-      "- Trigger Execution Plan (from Stage 2.1)\n"
-      "- Transformation Rules and Relational Schema (from Stage 1)\n"
-      "- Generated SQL/PL-pgSQL Trigger Code\n\n"
-      "Your validation MUST rigorously check the following criteria:\n"
-      "1. Correct identification of the relevant transformation rules set ($Relev(R)$).\n"
-      "2. Accurate algebraic computation of all changeset components: affected deletion pivot tuples ($A^-$), "
-      "affected insertion pivot tuples ($A^+$), post-update contributions ($S2$), insertion deltas ($\Delta^+_\{pivot\}$ and $\Delta^+_\{rel\}$), "
-      "and the overall insertion changeset ($\Delta^+$).\n"
-      "3. Correct implementation of URI construction functions, URI templates, and named graph specifications.\n"
-      "4. Precise relational joins, foreign key paths, and database predicates.\n"
-      "5. Proper usage of PostgreSQL statement-level transition tables (e.g., `REFERENCING OLD TABLE AS ... NEW TABLE AS ...`).\n"
-      "6. Complete absence of hallucinated attributes, predicates, relations, or non-existent transformation rules.\n\n"
-      "If any inconsistency or defect is found, generate structured, actionable feedback specifying exactly "
-      "which component failed so the synthesis agent can regenerate only the affected parts."
+      "Your synthesis MUST implement the following architectural requirements:\n"
+      "1. Utilize statement-level transition tables (`REFERENCING OLD TABLE AS ... NEW TABLE AS ...`) "
+      "to capture snapshots of update events over relation R ($\Delta^-$ and $\Delta^+$).\n"
+      "2. Compute the affected tuples for removal ($A^-[\Psi](u)$).\n"
+      "3. Compute the post-update contributions ($S2[\Psi](u)$) for each relevant rule $\Psi$.\n"
+      "4. Compute the affected tuples for insertion ($A^+[\Psi](u)$).\n"
+      "5. Compute the final insertion ($\Delta^+(u)$) and deletion changesets.\n"
+      "6. Construct clean, production-ready SQL statements that populate the asynchronous maintenance queue."
    ),
    expected_output="""
-A structured Static Verification and Audit Report in Markdown format (.md)
+A structured PostgreSQL Trigger Implementation Report in Markdown format (.md).
 
 The output MUST contain exclusively the Markdown report structure, without any extra conversational text or footnotes.
 
 The report must follow this exact structure:
 
-# Static Verification Report: PostgreSQL AFTER Triggers Audit
+# PostgreSQL AFTER Trigger Implementation Report
 
-## 1. Executive Verification Summary
-- **Verification Status**: `PASSED` (Statistically Verified) or `FAILED` (Action Required).
-- **Target Relation(s)**: List of database relation(s) audited.
-- **Overall Compliance Score**: Summary of conformance against formal IVM specifications.
+## 1. Synthesis Overview
+- **Target Relation(s)**: List of database relation(s) processed (e.g., Relation R).
+- **Architecture Compliance**: Confirmation of statement-level transition table usage (`REFERENCING OLD TABLE / NEW TABLE`) and asynchronous maintenance queue population.
 
-## 2. Checklist Verification Details
-Detailed evaluation for each audit dimension:
-- **Relevance Identification ($Relev(R)$)**: [PASS/FAIL] - Verification of whether all relevant transformation rules were correctly identified.
-- **Algebraic Changeset Computations**: [PASS/FAIL] - Verification of $A^-$, $A^+$, $S2$, $\Delta^+_\{pivot\}$, $\Delta^+_\{rel\}$, and $\Delta^+$.
-- **URI Construction & Named Graphs**: [PASS/FAIL] - Verification of URI functions, templates, and named graph declarations.
-- **Relational Joins & Predicates**: [PASS/FAIL] - Verification of schema join paths, foreign keys, and predicate alignment.
-- **PostgreSQL Transition Tables**: [PASS/FAIL] - Verification of `REFERENCING OLD TABLE / NEW TABLE` statement-level syntax.
-- **Hallucination Audit**: [PASS/FAIL] - Confirmation of the absence of non-existent attributes, predicates, relations, or transformation rules.
+## 2. Trigger Execution & Component Computation
+Detailed breakdown of the implemented logic for the generated SQL code:
+- **Snapshot Capture**: Description of how transition tables ($\Delta^-$ and $\Delta^+$) capture update event snapshots.
+- **Affected Deletion Tuples ($A^-[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for deletion.
+- **Post-Update Contributions ($S2[\Psi](u)$)**: Implementation logic computing post-update RDF states for rule $\Psi$.
+- **Affected Insertion Tuples ($A^+[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for insertion.
+- **Changesets Computation ($\Delta^+(u)$ and $\Delta^-(u)$)**: Final aggregation logic for insertion and deletion changesets.
 
-## 3. Detected Inconsistencies & Structured Feedback
-*(Only if Status is FAILED or requires regeneration)*
-For each detected issue, provide structured feedback to guide the synthesis agent:
-- **Affected Component/Rule**: [Name/ID of the affected component or rule]
-- **Specific Defect**: Clear explanation of the discrepancy between generated SQL code and formal specifications.
-- **Actionable Correction**: Precise guidance on how to regenerate only the affected component.
+## 3. Asynchronous Maintenance Queue Integration
+- Explanation of how computed components are serialized and loaded into the maintenance queue infrastructure.
 
-## 4. Final Verified Code Output
-*(Only included if Verification Status is PASSED)*
-The complete, statically verified PostgreSQL AFTER trigger SQL statements and PL/pgSQL function code.
+## 4. Generated PostgreSQL AFTER Trigger Code
+- Complete, syntactically correct SQL/PL-pgSQL code blocks for the statement-level AFTER triggers and associated functions.
 """,
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/after_trigger_{date_now}.md",
-   context=[task_trigger_planning],
-   agent=agent_ivm_critic,  # The critic/auditor agent
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/postgresql_after_triggers_{date_now}.md",
+   agent=trigger_generation_agent
 )
 
 
 
+### ==========================================
+### TASK 3 | STAGE 2
+### ==========================================
+trigger_static_verification_task = Task(
+   description=(
+      "Perform rigorous static verification of the generated PostgreSQL AFTER triggers, "
+      "without executing the code, to attest to their complete conformance with the formal specification.\n\n"
+      "Input Context:\n"
+      "<generated PostgreSQL AFTER triggers>{postgresql_after_triggers}\n</generated PostgreSQL AFTER triggers>\n\n"
+      "Your validation audit MUST exhaustively verify:\n"
+      "1. The correct identification of the set of relevant rules Relev(R).\n"
+      "2. The precision in computing A-, A+, S2, Δ+pivot, Δ+rel, and Δ+.\n"
+      "3. The correctness of URI constructors and named graphs.\n"
+      "4. The accuracy of relational joins and logical predicates.\n"
+      "5. The proper employment of PostgreSQL transition tables (REFERENCING OLD TABLE / NEW TABLE).\n"
+      "6. The total absence of hallucinated attributes, predicates, relations, or rules.\n\n"
+      "If any inconsistencies are detected, produce structured and actionable feedback "
+      "so that the synthesis agent can proceed with regeneration restricted solely to the affected components."
+   ),
+   expected_output="""
+A structured Static Verification Report in Markdown format (.md).
 
+The output MUST contain exclusively the Markdown report structure, without any extra conversational text or footnotes outside of it.
 
+The report must follow this exact structure:
 
+# Static Verification Report: PostgreSQL AFTER Triggers
 
+## 1. Executive Validation Summary
+- **Verification Status**: `PASSED` (Statistically Verified) or `FAILED` (Inconsistencies Found).
+- **Scope**: PostgreSQL AFTER triggers submitted for auditing.
 
+## 2. Detailed Compliance Checklist
+Detailed evaluation for each dimension required by the formal specification:
+- **Identification of Relev(R)**: [PASSED / FAILED] - Verification of the accuracy of associated relevant rules.
+- **Algebraic Components Computation**: [PASSED / FAILED] - Audit of calculations for $A^-$, $A^+$, $S2$, $\Delta^+_\{pivot\}$, $\Delta^+_\{rel\}$, and $\Delta^+$.
+- **URI Constructors and Named Graphs**: [PASSED / FAILED] - Validation of URI functions and named graph declarations.
+- **Relational Joins and Predicates**: [PASSED / FAILED] - Check of foreign key paths and logical conditions.
+- **PostgreSQL Transition Tables**: [PASSED / FAILED] - Validation of correct statement-level usage of `REFERENCING OLD TABLE / NEW TABLE`.
+- **Hallucination Audit**: [PASSED / FAILED] - Confirmation of the absolute absence of non-existent attributes, predicates, relations, or rules.
+
+## 3. Detected Inconsistencies and Structured Feedback
+*(Filled out only if the status is FAILED)*
+For each defect found, provide clear guidance for selective regeneration:
+- **Affected Component / Rule**: Identification of the element with a deviation.
+- **Specific Defect**: Explanation of the divergence from the formal specification.
+- **Actionable Correction**: Precise instruction to regenerate only the affected part.
+
+## 4. Final Approved Code
+*(Included only if the status is PASSED)*
+- The complete and strictly validated SQL/PL-pgSQL code of the AFTER triggers.
+""",
+   agent=ivm_critic_agent,  # Independent critic agent responsible for auditing
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/triggers_static_verification_report_{date_now}.md",
+)
 
 
 
@@ -269,13 +257,10 @@ from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
 
 after_trigger_gen_team_1 = Crew(
    agents=[
-      after_trigger_generation_agent,
-      # agent_ivm_critic
+      trigger_generation_agent,
    ],
    tasks=[
       task_trigger_planning,
-      # task_trigger_synthesis,
-      # task_trigger_static_verification
    ],
    process='sequential',
    knowledge_sources=[
@@ -289,19 +274,33 @@ after_trigger_gen_team_1 = Crew(
 
 after_trigger_gen_team_2 = Crew(
    agents=[
-      after_trigger_generation_agent,
-      # agent_ivm_critic
+      trigger_generation_agent,
    ],
    tasks=[
-      task_trigger_planning,
-      # task_trigger_synthesis,
-      # task_trigger_static_verification
+      trigger_synthesis_task,
    ],
    process='sequential',
    knowledge_sources=[
-         knowledge_of_formal_entity_preserving_specification,
-         knowledge_source_transformation_rule_patterns_v2,
-         knowledge_source_of_maintanance_queue_infrastructure,
-         knowledge_source_of_algorithm_1
-      ], # Enable knowledge by adding the sources here
+      knowledge_of_formal_entity_preserving_specification,
+      knowledge_source_transformation_rule_patterns_v2,
+      knowledge_source_of_maintanance_queue_infrastructure,
+      knowledge_source_of_algorithm_1
+   ],
+)
+
+
+after_trigger_gen_team_3 = Crew(
+   agents=[
+      ivm_critic_agent,
+   ],
+   tasks=[
+      trigger_static_verification_task,
+   ],
+   process='sequential',
+   knowledge_sources=[
+      knowledge_of_formal_entity_preserving_specification,
+      knowledge_source_transformation_rule_patterns_v2,
+      knowledge_source_of_maintanance_queue_infrastructure,
+      knowledge_source_of_algorithm_1
+   ],
 )

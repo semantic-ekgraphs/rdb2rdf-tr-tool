@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import qa, rdb2rdf_routes, stage_1, stage_2
+from .routers import qa, rdb2rdf_routes, stage_1, stage_2, stage_3
 
 app = FastAPI()
 @app.get("/", tags=["Index"])
@@ -8,6 +8,7 @@ def route_index():
 	return {"message": "Hello World! I'm RDB2RDF Incremental View Maintenance Tool!!"}
 app.include_router(stage_1.router)
 app.include_router(stage_2.router)
+app.include_router(stage_3.router)
 
 origins = [
 	"http://localhost:3002",

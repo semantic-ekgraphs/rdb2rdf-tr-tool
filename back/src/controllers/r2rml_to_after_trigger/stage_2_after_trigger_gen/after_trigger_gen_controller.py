@@ -4,7 +4,7 @@ from datetime import datetime
 from src.utils import console_log, read_txt_file, write_json_after_trigger_output_file
 from src.utils import get_path_of_generated_file, get_path_of_file_from_temp
 from src.constants import TEXTS
-from .after_trigger_gen_agentic import after_trigger_gen_team_1, after_trigger_gen_team_2
+from .after_trigger_gen_agentic import after_trigger_gen_team_1, after_trigger_gen_team_2, after_trigger_gen_team_3
 
 console = lambda x: console_log("RDB2RDF CONTROLLER", x)
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -40,8 +40,10 @@ async def plan_after_trigger() -> str:
 
 
 
-# Task 2 / Stage 2
-# Essa task deverisa seu divida em duas
+### ==========================================
+### TASK 2 | STAGE 2
+### ==========================================
+# Essa task deveria ser divida em duas
 async def synthesizes_verifies_trigger() -> str:
    print(console('synthesizes_verifies_trigger()'))
    
@@ -57,6 +59,31 @@ async def synthesizes_verifies_trigger() -> str:
    }
 
    answer = after_trigger_gen_team_2.kickoff(inputs)
+
+   if answer:
+      return answer
+   else:
+      return {'message': 'Fail!!'}
+
+
+
+
+
+
+### ==========================================
+### TASK 3 | STAGE 2
+### ==========================================
+async def trigger_static_verification() -> str:
+   print(console('trigger_static_verification()'))
+   
+   postgresql_after_triggers_file    = get_path_of_generated_file("postgresql_after_triggers.md")
+   postgresql_after_triggers_content = read_txt_file(postgresql_after_triggers_file)
+
+   inputs = {
+      'postgresql_after_triggers': postgresql_after_triggers_content,
+   }
+
+   answer = after_trigger_gen_team_3.kickoff(inputs)
 
    if answer:
       return answer

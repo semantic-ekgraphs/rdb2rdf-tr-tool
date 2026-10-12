@@ -35,22 +35,29 @@ TXT_CODE_OF_METADATA_VIEW = "metadata-view"
 TXT_METADATA = "2"
 TXT_HOME_DIRECTORY = os.path.expanduser('~')
 TXT_TEN_DASHES = "-" * 20
-# TAGS PARA A DOCUMENTAÇÃO SWAGGER DA API
+### ==========================================
+### TAGS PARA A DOCUMENTAÇÃO SWAGGER DA API
+### ==========================================
 TAG_DATASETS = "Datasets"
 TAG_SCHEMA = "Schema"
 TAG_AGENTIC = "Agentic"
 TAG_RDB2RDF = "RDB2RDF"
 TAG_R2RML_TO_TR = "R2RML2TR"
-TR_TO_AFTER_TRIGGER = "TR-to-AFTER-Trigger"
+TAG_TR_TO_TRIGGER = "TR-to-AFTER-Trigger"
+TAG_TRIGGER_VALIDATION_AND_REPAIR = "Trigger Validation & Repair"
 TAG_QA = "Q&A"
-# REGISTRATIONS
+### ==========================================
+### REGISTRATIONS
+### ==========================================
 TAG_REGISTRATION = "Registration"
 TAG_ORGANIZATION = "Organization"
 TAG_DELTA_TABLE = "Delta Table"
 TAG_IMPORT_FILE = "ImportFile"
 TAG_USER = "User"
 TAG_RESOURCE = "Resource"
-# LLM
+### ==========================================
+### LLM
+### ==========================================
 TAG_LLM = "LLM"
 
 class NameSpaces:
