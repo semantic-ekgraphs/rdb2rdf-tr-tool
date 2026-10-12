@@ -127,7 +127,7 @@ def get_path_of_file_from_knowledge(file_name:str) -> Path:
 
 def get_path_of_file_from_temp(file_name:str) -> Path:
 	"""Return a file path as Path"""
-	parent_path = Path(__file__).parent / "../../../../"
+	parent_path = Path(__file__).parent.parent
 	return parent_path / "temp" / file_name
 
 

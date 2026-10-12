@@ -1,22 +1,42 @@
-# rdb2rdf-tr-tool
-RDB2RDF Transformation Rules Tool
-
----
-# Running the Back-end
-
-`fatsapi dev`
+# RDB2RDF Tool
+Relational Database to RDF Views Tool
 
 
-Analise os dois arquivos anexos com cuidado. 
-Junte as ideias dos dois documentos.
-Organize as ideias e elabore um framework resultante dessa junção. 
-Use apenas os textos explícitos nos dois documentos.
-Não invente, crie, proponha ou sugira, use apenas os textos dos anexos.
-Se necessário, corrija sintátice e semânticamente a escrita.
-A saída deve ser em PDF.
+
+## Setting and Running the Back-end
+
+### Setting the Back-end
+First of all, It is recommended to create a virtual environment.
+
+```
+python -m venv .venv
+```
 
 
-Stage 2
+After setting up the virtual environment, you must install the packages using the "requirements.txt" file by running the following command:
 
-Agent suggested by Gemini:
-Principais pontos garantidos nesta definição:Sem Ambiguidade (Cobertura Completa das Subetapas): Incorpora claramente tanto a subetapa 2.1 (Trigger Planning) quanto a 2.2 (Trigger Synthesis and Static Verification) descritas no texto.Especificidade Teórica: Cita explicitamente o cálculo de $Relev(R)$, a distinção entre regras pivot-relevant e relation-relevant, e a geração de todas as estruturas algébricas de changeset ($A^-$, $A^+$, $S2$, $\Delta^+_{pivot}$, $\Delta^+_{rel}$ e $\Delta^+$).Restrições Técnicas do PostgreSQL: Reforça o uso obrigatório de gatilhos pós-operação em nível de instrução (statement-level AFTER triggers) acoplados às tabelas de transição para popular a fila de manutenção assíncrona (asynchronous maintenance queue).
+```
+python install -r requirements.txt
+```
+
+
+### Running the Back-end
+
+To run the back-end application, enter the "/src" folder
+
+```
+cd /src
+```
+
+then, execute the "run-fastapi-dev.bat" file for Windows.
+
+
+```
+run-fastapi-dev.bat
+```
+
+To view the API documentation for the RDB2RDF tool, open the following address in any web browser:
+
+```
+http://127.0.0.1:8000/docs
+```

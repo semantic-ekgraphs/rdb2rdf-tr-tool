@@ -2,24 +2,24 @@ import json
 from pathlib import Path
 from datetime import datetime
 from src.utils import console_log, read_txt_file, write_json_after_trigger_output_file
+from src.utils import get_path_of_generated_file, get_path_of_file_from_temp
 from src.constants import TEXTS
-from .after_trigger_gen_agentic import after_trigger_gen_team
+from .after_trigger_gen_agentic import after_trigger_gen_team_1, after_trigger_gen_team_2
 
 console = lambda x: console_log("RDB2RDF CONTROLLER", x)
-parent_folders = "../../../"
-parent_path = Path(__file__).parent / "../../../"
-# outputs
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 
 
-# Task 1 / Stage 2
+### ==========================================
+### TASK 1 | STAGE 2
+### ==========================================
 async def plan_after_trigger() -> str:
    print(console('plan_after_trigger()'))
    
-   generated_tr_file = parent_path /  f"{TEXTS.GENERATED_DATA_FOLDER}/transformation_rules.md"
-   rdb_schema_file   = parent_path / "temp/mbz_schema_short.sql"
+   generated_tr_file = get_path_of_generated_file("transformation_rules.md")
+   rdb_schema_file   = get_path_of_file_from_temp("mbz_schema_short.sql")
    
    generated_tr_content = read_txt_file(generated_tr_file)
    rdb_schema_content  = read_txt_file(rdb_schema_file)
@@ -29,7 +29,7 @@ async def plan_after_trigger() -> str:
       'rdb_schema':            rdb_schema_content,
    }
 
-   answer = after_trigger_gen_team.kickoff(inputs)
+   answer = after_trigger_gen_team_1.kickoff(inputs)
 
    if answer:
       return answer
@@ -45,8 +45,8 @@ async def plan_after_trigger() -> str:
 async def synthesizes_verifies_trigger() -> str:
    print(console('synthesizes_verifies_trigger()'))
    
-   trigger_execution_plan_file = parent_path /  f"{TEXTS.GENERATED_DATA_FOLDER}/trigger_execution_plan.md"
-   generated_tr_file           = parent_path /  f"{TEXTS.GENERATED_DATA_FOLDER}/transformation_rules.md"
+   trigger_execution_plan_file = get_path_of_generated_file("trigger_execution_plan.md")
+   generated_tr_file           = get_path_of_generated_file("transformation_rules.md")
    
    trigger_execution_plan_content = read_txt_file(trigger_execution_plan_file)
    generated_tr_content           = read_txt_file(generated_tr_file)
@@ -56,7 +56,7 @@ async def synthesizes_verifies_trigger() -> str:
       'transformation_rules':   generated_tr_content,
    }
 
-   answer = after_trigger_gen_team.kickoff(inputs)
+   answer = after_trigger_gen_team_2.kickoff(inputs)
 
    if answer:
       return answer

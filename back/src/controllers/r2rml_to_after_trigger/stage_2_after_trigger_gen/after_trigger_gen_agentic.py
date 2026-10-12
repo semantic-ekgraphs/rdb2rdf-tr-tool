@@ -77,10 +77,8 @@ agent_ivm_critic = Agent(
 
 
 ### ==========================================
-### TASKS of STAGE 2
+### TASK 1 | STAGE 2
 ### ==========================================
-
-# Tasks 1 / Stage 2
 # provided relational schema and
 from .model import TriggerPlanRow
 task_trigger_planning = Task(
@@ -88,7 +86,7 @@ task_trigger_planning = Task(
       "Analyze the set of Transformation Rules inputed "
       "to determine the required incremental maintenance strategy for each database relation $R$, "
       "without generating SQL code at this stage.\n\n"
-      "For each updated relation $R$, you must:\n"
+      "For each updated pivot relation $R$, you must:\n"
       "1. Compute the set $Relev(R)$ of all relevant Transformation Rules.\n"
       "2. Classify each rule in the set as 'pivot-relevant' or 'relation-relevant'.\n"
       "3. Identify whether multiple occurrences of relation $R$ exist in the rule's relational path.\n"
@@ -269,14 +267,34 @@ from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_
 from knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
 from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
 
-after_trigger_gen_team = Crew(
+after_trigger_gen_team_1 = Crew(
    agents=[
       after_trigger_generation_agent,
       # agent_ivm_critic
    ],
    tasks=[
-      # task_trigger_planning,
-      task_trigger_synthesis,
+      task_trigger_planning,
+      # task_trigger_synthesis,
+      # task_trigger_static_verification
+   ],
+   process='sequential',
+   knowledge_sources=[
+         knowledge_of_formal_entity_preserving_specification,
+         knowledge_source_transformation_rule_patterns_v2,
+         knowledge_source_of_maintanance_queue_infrastructure,
+         knowledge_source_of_algorithm_1
+      ], # Enable knowledge by adding the sources here
+)
+
+
+after_trigger_gen_team_2 = Crew(
+   agents=[
+      after_trigger_generation_agent,
+      # agent_ivm_critic
+   ],
+   tasks=[
+      task_trigger_planning,
+      # task_trigger_synthesis,
       # task_trigger_static_verification
    ],
    process='sequential',

@@ -30,8 +30,8 @@ mbz_tr_file               = get_path_of_file_from_temp("mbz_tr.json")
 async def extract_metadata() -> str:
    print(console('extract_metadata()'))
 
-   r2rml_file      = get_path_of_file_from_temp("temp/mbz_r2rml_short_short.ttl")
-   rdb_schema_file = get_path_of_file_from_temp("temp/mbz_schema_short.sql")
+   r2rml_file      = get_path_of_file_from_temp("mbz_r2rml_short_short.ttl")
+   rdb_schema_file = get_path_of_file_from_temp("mbz_schema_short.sql")
 
    r2rml_content      = read_txt_file(r2rml_file)
    schema_sql_content = read_txt_file(rdb_schema_file)
@@ -42,9 +42,9 @@ async def extract_metadata() -> str:
       'rdb_schema':    schema_sql_content,
    }
 
-   answer = transformation_rules_team_task_1.kickoff(inputs)
+   # answer = transformation_rules_team_task_1.kickoff(inputs)
    
-   return answer if answer else {'message': 'Fail!!'}
+   return "answer if answer else {'message': 'Fail!!'}"
             
 
 
