@@ -1,5 +1,5 @@
-# RDB2RDF Tool
-Relational Database to RDF Views Tool
+# RDB2RDF IVM Tool
+RDB2RDF Incremental View Maintenance Tool
 
 The tool is being developed to automatically perform incremental maintenance of RDF views through the following steps:
 

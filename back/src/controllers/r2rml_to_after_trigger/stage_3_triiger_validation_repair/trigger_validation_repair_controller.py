@@ -67,6 +67,7 @@ async def runtime_validation() -> str:
 async def automatic_diagnosis_repair():
    print(console('automatic_diagnosis_repair()'))
 
+   # Aqui entra os logs do Narciso.Worker()
    inputs = {}
    answer = trigger_validation_repair_team_3.kickoff(inputs)
    

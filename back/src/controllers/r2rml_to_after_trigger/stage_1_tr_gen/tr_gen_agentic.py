@@ -90,7 +90,7 @@ task_metadata_extraction_and_normalization = Task(
       f"{get_prompt_of_columns(TriplesMapParsing)}"
       "Concatenate the CONSTRAINT names, separated by ' | '."
    ),
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/extracted_metadata_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
@@ -126,7 +126,7 @@ task_entity_preservation_analysis = Task(
       f"{get_prompt_of_columns(EntityPreservationRow)}"
       ""
    ),
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/entity_preservation_analysis_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/entity_preservation_analysis_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
@@ -182,7 +182,7 @@ For each processed R2RML mapping:
 ---
 *(Repeat for all generated rules)*
 """,
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/transformation_rules_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/transformation_rules_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
@@ -234,7 +234,7 @@ For each compiled Transformation Rule:
 *(Included when overall status is PASSED)*
 The finalized, fully verified set of formal Transformation Rules ready for downstream deployment.
 """,
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/validated_transformation_rules_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/validated_transformation_rules_{date_now}.md",
    context=[task_transformation_rule_generation],  # Explicit dependency on Task 1
    agent=transformation_rule_validation_agent
 )
@@ -282,7 +282,7 @@ transformation_rules_team_task_1 = Crew(
    process='sequential',
    knowledge_sources=[ # Enable knowledge by adding the sources here
       knowledge_source_transformation_rule_patterns_v2
-   ], 
+   ] 
 )
 
 
@@ -296,7 +296,7 @@ transformation_rules_team_task_2 = Crew(
    process='sequential',
    knowledge_sources=[
       knowledge_of_formal_entity_preserving_specification
-   ], 
+   ]
 )
 
 
@@ -312,5 +312,5 @@ transformation_rules_team_task_3 = Crew(
    knowledge_sources=[
       knowledge_of_formal_entity_preserving_specification,
       knowledge_source_transformation_rule_patterns_v2
-   ], 
+   ]
 )
