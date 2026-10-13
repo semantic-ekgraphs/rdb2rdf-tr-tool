@@ -118,7 +118,7 @@ task_trigger_planning = Task(
       "*(Repeat the structure above for all relations R present in the transformation rules in the following columns:"
       f"{get_prompt_of_columns(TriggerPlanRow)})*"
    ),
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/trigger_execution_plan_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage2/trigger_execution_plan_{date_now}.md",
    agent=trigger_generation_agent
 )
 
@@ -173,7 +173,7 @@ Detailed breakdown of the implemented logic for the generated SQL code:
 ## 4. Generated PostgreSQL AFTER Trigger Code
 - Complete, syntactically correct SQL/PL-pgSQL code blocks for the statement-level AFTER triggers and associated functions.
 """,
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/postgresql_after_triggers_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage2/postgresql_after_triggers_{date_now}.md",
    agent=trigger_generation_agent
 )
 
@@ -232,7 +232,7 @@ For each defect found, provide clear guidance for selective regeneration:
 - The complete and strictly validated SQL/PL-pgSQL code of the AFTER triggers.
 """,
    agent=ivm_critic_agent,  # Independent critic agent responsible for auditing
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/triggers_static_verification_report_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage2/triggers_static_verification_report_{date_now}.md",
 )
 
 

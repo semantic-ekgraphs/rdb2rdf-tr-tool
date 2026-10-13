@@ -92,7 +92,7 @@ Detailed specification of test operations:
 - Complete SQL statements for populating synthetic datasets and executing the structured update scenarios.
 """,
    agent=trigger_validation_repair_agent,  # The validation, test, and repair specialist agent
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/test_generation_report_{date_now}.md"
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage3/test_generation_report_{date_now}.md"
 )
 
 
@@ -144,7 +144,7 @@ The report must follow this exact structure:
 - Detailed error logs, mismatched contributions, or state divergence points requiring repair.
 """,
    agent=trigger_validation_repair_agent, 
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/runtime_validation_report_{date_now}.md"
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage3/runtime_validation_report_{date_now}.md"
 )
 
 
@@ -198,7 +198,7 @@ The report must follow this exact structure:
 - **Final Corrected Code**: The updated, fully revalidated PostgreSQL AFTER trigger implementation.
 """,
    agent=trigger_validation_repair_agent,  # The validation and repair specialist agent
-   output_file="automatic_repair_report.md"  # Output Markdown file path
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage3/automatic_repair_report_{date_now}.md"
 )
 
 

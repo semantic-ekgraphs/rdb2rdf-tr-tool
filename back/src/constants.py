@@ -38,6 +38,7 @@ TXT_TEN_DASHES = "-" * 20
 ### ==========================================
 ### TAGS PARA A DOCUMENTAÇÃO SWAGGER DA API
 ### ==========================================
+TAG_INDEX = "Home"
 TAG_DATASETS = "Datasets"
 TAG_SCHEMA = "Schema"
 TAG_AGENTIC = "Agentic"

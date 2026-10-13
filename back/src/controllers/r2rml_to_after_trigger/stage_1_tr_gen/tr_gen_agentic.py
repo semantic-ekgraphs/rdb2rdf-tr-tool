@@ -90,7 +90,7 @@ task_metadata_extraction_and_normalization = Task(
       f"{get_prompt_of_columns(TriplesMapParsing)}"
       "Concatenate the CONSTRAINT names, separated by ' | '."
    ),
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/extracted_metadata_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/extracted_metadata_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
@@ -126,7 +126,7 @@ task_entity_preservation_analysis = Task(
       f"{get_prompt_of_columns(EntityPreservationRow)}"
       ""
    ),
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/entity_preservation_analysis_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/entity_preservation_analysis_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
@@ -182,7 +182,7 @@ For each processed R2RML mapping:
 ---
 *(Repeat for all generated rules)*
 """,
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/transformation_rules_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/transformation_rules_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
@@ -234,7 +234,7 @@ For each compiled Transformation Rule:
 *(Included when overall status is PASSED)*
 The finalized, fully verified set of formal Transformation Rules ready for downstream deployment.
 """,
-   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/1/validated_transformation_rules_{date_now}.md",
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/validated_transformation_rules_{date_now}.md",
    context=[task_transformation_rule_generation],  # Explicit dependency on Task 1
    agent=transformation_rule_validation_agent
 )
@@ -254,22 +254,6 @@ The finalized, fully verified set of formal Transformation Rules ready for downs
 ### TRANSFORMATION RULES TEAM
 ### ==========================================
 from crewai import Crew
-
-
-object_preserving_team = Crew(
-   agents=[
-      transformation_rule_generation_agent
-   ],
-   tasks=[
-      # list_triples_map_task,
-      # task_extract_entity_preserving,
-      # mapping_analysis_task
-      # object_preserving_analysis_task,
-   ],
-   process='sequential',
-   # knowledge_sources=[object_preserving_definition_knowledge_source]
-)
-
 from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
 from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 transformation_rules_team_task_1 = Crew(
