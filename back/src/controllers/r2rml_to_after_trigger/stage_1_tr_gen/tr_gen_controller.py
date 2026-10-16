@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 from src.utils import console_log, read_txt_file, write_json_after_trigger_output_file
 from src.utils import get_path_of_file, get_path_of_generated_file, get_path_of_file_from_knowledge, get_path_of_file_from_temp
-from .tr_gen_agentic import object_preserving_team, transformation_rules_team_task_1
+from .tr_gen_agentic import transformation_rules_team_task_1
 from .tr_gen_agentic import transformation_rules_team_task_2, transformation_rules_team_task_3
 from src.constants import TEXTS
 
@@ -30,8 +30,8 @@ mbz_tr_file               = get_path_of_file_from_temp("mbz_tr.json")
 async def extract_metadata() -> str:
    print(console('extract_metadata()'))
 
-   r2rml_file      = get_path_of_file_from_temp("mbz_r2rml_short_short.ttl")
-   rdb_schema_file = get_path_of_file_from_temp("mbz_schema_short.sql")
+   r2rml_file      = get_path_of_file_from_temp("a_r2rml.ttl")
+   rdb_schema_file = get_path_of_file_from_temp("a_schema.sql")
 
    r2rml_content      = read_txt_file(r2rml_file)
    schema_sql_content = read_txt_file(rdb_schema_file)
@@ -42,9 +42,9 @@ async def extract_metadata() -> str:
       'rdb_schema':    schema_sql_content,
    }
 
-   # answer = transformation_rules_team_task_1.kickoff(inputs)
+   answer = transformation_rules_team_task_1.kickoff(inputs)
    
-   return "answer if answer else {'message': 'Fail!!'}"
+   return answer if answer else {'message': 'Fail!!'}
             
 
 
@@ -55,15 +55,12 @@ async def extract_metadata() -> str:
 async def analyzes_entity_preservation():
    print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
    
-   extracted_metadata_file           = get_path_of_generated_file("extracted_metadata.md")
-   entity_preservation_analysis_file = get_path_of_generated_file("entity_preservation_analysis.md")
+   extracted_metadata_file    = get_path_of_generated_file("stage1/extracted_metadata.md")
    
-   extracted_metadata_content           = read_txt_file(extracted_metadata_file)
-   entity_preservation_analysis_content = read_txt_file(entity_preservation_analysis_file)
+   extracted_metadata_content = read_txt_file(extracted_metadata_file)
    
    inputs = {
-      'extracted_metadata':           extracted_metadata_content,
-      'entity_preservation_analysis': entity_preservation_analysis_content
+      'extracted_metadata': extracted_metadata_content,
    }
 
    answer = transformation_rules_team_task_2.kickoff(inputs)
@@ -81,10 +78,9 @@ async def analyzes_entity_preservation():
 async def generates_transformation_rules():
    print(console('generates_transformation_rules()'))
 
-   r2rml_file                        = parent_path / "temp/mbz_r2rml_short_short.ttl"
-   extracted_metadata_file           = parent_path_gen /  f"{TEXTS.GENERATED_DATA_FOLDER}/extracted_metadata.md"  
-   entity_preservation_analysis_file = parent_path_gen /  f"{TEXTS.GENERATED_DATA_FOLDER}/entity_preservation_analysis.md"  
-   
+   r2rml_file                        = get_path_of_file_from_temp("a_r2rml.ttl")
+   extracted_metadata_file           = get_path_of_generated_file("stage1/extracted_metadata.md")  
+   entity_preservation_analysis_file = get_path_of_generated_file("stage1/entity_preservation_analysis.md")
    
    r2rml_content                        = read_txt_file(r2rml_file)
    extracted_metadata_content           = read_txt_file(extracted_metadata_file)

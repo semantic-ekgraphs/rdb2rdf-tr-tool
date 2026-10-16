@@ -79,8 +79,8 @@ task_metadata_extraction_and_normalization = Task(
    "- Analyze each rr:TriplesMap independently;\n"
    "- Always include the rdf:type for rdf_predicate column if a rr:subjectMap has rr:class property;\n"
    "- Do not parse commented-out R2RML mappings. Comments in R2RML start with #;\n"
-   "- Never invent or create CONSTRAINT names;\n"
-   "- Remove any invented or created CONSTRAINT name.\n\n"
+   "- Never invent CONSTRAINT names;\n"
+   "- Remove any invented CONSTRAINT name.\n\n"
    "Inputs: \n"
    "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
    "<Relational Schema>{rdb_schema}</Relational Schema>\n"
@@ -104,6 +104,8 @@ task_metadata_extraction_and_normalization = Task(
 ### TASK 2 | STAGE 1
 ### ==========================================
 from .model import EntityPreservationRow
+# O segundo mapeamento gerou TR. Talvez seja necessário adicionar 
+# a instrução de não gerar TRs.
 task_entity_preservation_analysis = Task(
    description=(
 "Verifies whether the R2RML mappings, in <Extracted Metadada> input, satisfy the assumptions required by "
