@@ -52,7 +52,7 @@ http://127.0.0.1:8000/docs
 First of all, It is recommended to create a virtual environment.
 
 ```
-python -m venv .venv2
+python -m venv venv2
 ```
 
 After setting up the virtual environment, you must install the packages using:
@@ -63,10 +63,10 @@ npm install dotenv express cors multer axios react-markdown remark-gfm concurren
 
 ### Running the Front-end
 
-To run the back-end application, enter the "front/src" folder
+To run the front-end application, enter the "src" folder
 
 ```
-cd front/src
+cd src
 ```
 
 This command leverages the concurrently package to execute both npm run server and npm run dev in parallel.
@@ -86,4 +86,9 @@ This starts the front-end development server
 
 ```
 Npm run dev
+```
+
+To view the front of the RDB2RDF tool, open the following address in any web browser:
+```
+http://localhost:5173/
 ```
