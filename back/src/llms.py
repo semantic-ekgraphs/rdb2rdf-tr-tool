@@ -37,6 +37,13 @@ llama_3b_Ollama = LLM(
    base_url="http://localhost:11434"
 )
 
+local_GEMMA = LLM(
+   model="ollama/gemma4:e4b", 
+   temperature=0.5,
+   base_url="http://localhost:11434",
+   
+)
+
 ##############################################
 ### OPENAI (do mais fraco para o mais potente)
 ##############################################

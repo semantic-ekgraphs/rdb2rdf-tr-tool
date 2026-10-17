@@ -44,3 +44,46 @@ To view the API documentation for the RDB2RDF tool, open the following address i
 ```
 http://127.0.0.1:8000/docs
 ```
+
+## Setting and Running the Front-end
+
+### Setting the Front-end
+
+First of all, It is recommended to create a virtual environment.
+
+```
+python -m venv .venv2
+```
+
+After setting up the virtual environment, you must install the packages using:
+
+```
+npm install dotenv express cors multer axios react-markdown remark-gfm concurrently
+``` 
+
+### Running the Front-end
+
+To run the back-end application, enter the "front/src" folder
+
+```
+cd front/src
+```
+
+This command leverages the concurrently package to execute both npm run server and npm run dev in parallel.
+```
+Npm run start
+```
+
+If you want to run it in different terminals, you can:
+
+This executes node server.js, starting only the Node.js Express backend service.
+
+```
+Npm run server
+```
+
+This starts the front-end development server
+
+```
+Npm run dev
+```

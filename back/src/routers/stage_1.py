@@ -26,3 +26,24 @@ async def analyzes_entity_preservation():
             description="Route to convert R2RML mapping to transformation r ules.")
 async def generates_transformation_rules():  
    return await tr_gen_controller.generates_transformation_rules()
+
+
+
+@router.post("/metadata-extraction/", 
+            description="Route to extract R2RML metadata.")
+async def extract_metadata(file1: str,file2: str):  
+   return await tr_gen_controller.extract_metadata(file1,file2)
+
+
+
+@router.post("/entitiy-preservation-analysis/", 
+            description="Route to analyzes entity-preservation from extracted metadata.")
+async def analyzes_entity_preservation():  
+   return await tr_gen_controller.analyzes_entity_preservation()
+
+
+
+@router.post("/tr-gen/", 
+            description="Route to convert R2RML mapping to transformation r ules.")
+async def generates_transformation_rules():  
+   return await tr_gen_controller.generates_transformation_rules()

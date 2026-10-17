@@ -27,11 +27,16 @@ mbz_tr_file               = get_path_of_file_from_temp("mbz_tr.json")
 ### ==========================================
 ### TASK 1 | STAGE 1
 ### ==========================================
-async def extract_metadata() -> str:
+async def extract_metadata(file1:str,file2:str) -> str:
    print(console('extract_metadata()'))
 
-   r2rml_file      = get_path_of_file_from_temp("a_r2rml.ttl")
-   rdb_schema_file = get_path_of_file_from_temp("a_schema.sql")
+   # Only Back-end remove 'file1:str,file2:str' in parameters in the function 
+   #r2rml_file      = get_path_of_file_from_temp("a_r2rml.ttl")
+   #rdb_schema_file = get_path_of_file_from_temp("a_schema.sql")
+
+   # Front-end Add 'file1:str,file2:str' in parameters in the function
+   r2rml_file      = get_path_of_file_from_temp(file2)
+   rdb_schema_file = get_path_of_file_from_temp(file1)
 
    r2rml_content      = read_txt_file(r2rml_file)
    schema_sql_content = read_txt_file(rdb_schema_file)
