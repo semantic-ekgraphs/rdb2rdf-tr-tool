@@ -18,7 +18,7 @@ const TASK1_PATH = process.env.FASTAPI_TASK1_PATH || "/r2rml-to-tr/metadata-extr
 const TASK2_PATH = process.env.FASTAPI_TASK2_PATH || "/r2rml-to-tr/entitiy-preservation-analysis/";
 const TASK3_PATH = process.env.FASTAPI_TASK3_PATH || "/r2rml-to-tr/tr-gen/";
 const TASK1_2_PATH = process.env.FASTAPI_TASK1_2_PATH || "/tr-to-after-trigger/trigger-planning/";
-const UPLOAD_DIR = path.resolve(__dirname, process.env.UPLOAD_DIR || "../back/src/temp");
+const UPLOAD_DIR = path.resolve(__dirname, process.env.UPLOAD_DIR || "../back/temp");
 const MAX_FILE_SIZE = Number(process.env.UPLOAD_MAX_MB || 100) * 1024 * 1024;
 
 
