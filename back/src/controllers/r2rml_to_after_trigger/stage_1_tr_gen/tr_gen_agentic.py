@@ -111,15 +111,9 @@ task_entity_preservation_analysis = Task(
 "Verifies whether the R2RML mappings, in <Extracted Metadada> input, satisfy the assumptions required by "
 "the formal entity-preserving specification. "
 "In particular, it identifies:"
-"- relation;\n"
-"- pivot relations;\n"
-"- checks whether entity identities are preserved;\n"
-"- generates and validates URI construction functions;\n"
-"- analyzes relational paths; and\n"
-"- detects constructs that violate the entity-preserving property;\n"
-"- correction recommended.\n\n"
+f"{get_prompt_of_a_pydantic_model(EntityPreservationRow)}\n\n"
 "Important Requirements:\n"
-"- In the relational schema, consider SERIAL as the primary key and UUID as the unique key.\n"
+"- If the relational schema does not present 'PRIMARY KEY', consider the data type SERIAL as the primary key and UUID as the unique key.\n"
 "Inputs: "
 "<Extracted Metadada>{extracted_metadata}</Extracted Metadada>\n"
 ),
@@ -133,6 +127,13 @@ task_entity_preservation_analysis = Task(
 )
 
 
+# "- relation;\n"
+# "- pivot relations;\n"
+# "- checks whether entity identities are preserved;\n"
+# "- generates and validates URI construction functions;\n"
+# "- analyzes relational paths; and\n"
+# "- detects constructs that violate the entity-preserving property;\n"
+# "- correction recommended.\n\n"
 
 
 
@@ -153,42 +154,60 @@ task_transformation_rule_generation = Task(
    "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
    "<entity_preservation_analysis>{entity_preservation_analysis}<entity_preservation_analysis>\n\n"
    "For each mapping, you MUST:\n"
-   "- Analyze the mapping logic and classify it precisely into one of the four formal categories: "
-   "  - Class Transformation Rule (CTR);\n"
-   "  - Object Property Transformation Rule (OTR);\n"
-   "  - Local Datatype Transformation Rule (Local DTR); or\n "
-   "  - Path Datatype Transformation Rule (Path DTR).\n"
-   "- Identify the pivot relation that determines resource identity and subject URI generation.\n"
-   "- Construct the formal TR specification using the appropriate Global URI Predicates and auxiliary built-ins.\n"
-   "- Isolate relational join paths and position them as the final term in the rule body when required."
+   f"{get_prompt_of_a_pydantic_model(TransformationRuleRow)}\n\n"
    ),
-   expected_output="""
-A structured report in Markdown format (.md) containing the compiled Transformation Rules (TRs).
-
-The report MUST strictly follow this Markdown structure:
-
-# Generated Transformation Rules Report
-
-## 1. Overview
-Summary of the total number of compiled R2RML mappings and their assigned transformation rule categories.
-
-## 2. Compiled Transformation Rules
-For each processed R2RML mapping:
-- **TriplesMap Identifier**: Name or ID of the source R2RML TriplesMap.
-- **Rule Identifier**: Assigned TR name (e.g., `\psi_artist_01`).
-- **Rule Type**: Strictly categorized as `CTR` (Class Transformation Rule), `OTR` (Object Property Transformation Rule), `Local DTR` (Local Datatype Transformation Rule), or `Path DTR` (Path Datatype Transformation Rule).
-- **Pivot Relation**: Identified base or derived relation acting as the identity pivot.
-- **Formal TR Specification**: The complete formal logic formula representing the rule.
-- **Relational Path**: Positioned as the final term in the rule body (if applicable).
-
----
-*(Repeat for all generated rules)*
-""",
+   expected_output=(
+"A structured report in Markdown format (.md) containing the compiled Transformation Rules (TRs). "
+"covering the following columns:"
+f"{get_prompt_of_columns(TransformationRuleRow)} "
+"*(Repeat for all generated rules)* "
+   ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/transformation_rules_{date_now}.md",
    agent=transformation_rule_generation_agent
 )
 
 
+
+# task_transformation_rule_generation = Task(
+#    description=(
+#    "Using the <validated metadata> and <entity_preservation_analysis>, compile each R2RML mapping "
+#    "into a formal Transformation Rule (TR) specification.\n\n"
+#    "Inputs: "
+#    "<validated metadata>{validated_metadata}</validated metadata>\n\n"
+#    "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
+#    "<entity_preservation_analysis>{entity_preservation_analysis}<entity_preservation_analysis>\n\n"
+#    "For each mapping, you MUST:\n"
+#    "- Analyze the mapping logic and classify it precisely into one of the four formal categories: "
+#    "  - Class Transformation Rule (CTR);\n"
+#    "  - Object Property Transformation Rule (OTR);\n"
+#    "  - Local Datatype Transformation Rule (Local DTR); or\n "
+#    "  - Path Datatype Transformation Rule (Path DTR).\n"
+#    "- Identify the pivot relation that determines resource identity and subject URI generation.\n"
+#    "- Construct the formal TR specification using the appropriate Global URI Predicates and auxiliary built-ins.\n"
+#    "- Isolate relational join paths and position them as the final term in the rule body when required."
+#    ),
+#    expected_output=(
+# "A structured report in Markdown format (.md) containing the compiled Transformation Rules (TRs). "
+# "The report MUST strictly follow this Markdown structure: "
+# "# Generated Transformation Rules Report "
+# "## 1. Overview "
+# "Summary of the total number of compiled R2RML mappings and their assigned transformation rule categories. "
+# "## 2. Compiled Transformation Rules "
+# "For each processed R2RML mapping: "
+# "- **TriplesMap Identifier**: Name or ID of the source R2RML TriplesMap. "
+# "- **Rule Identifier**: Assigned TR name (e.g., `\psi_artist_01`). "
+# "- **Rule Type**: Strictly categorized as `CTR` (Class Transformation Rule), `OTR` (Object Property Transformation Rule), `Local DTR` (Local Datatype Transformation Rule), or `Path DTR` (Path Datatype Transformation Rule). "
+# "- **Pivot Relation**: Identified base or derived relation acting as the identity pivot. "
+# "- **Formal TR Specification**: The complete formal logic formula representing the rule. "
+# "- **Relational Path**: Positioned as the final term in the rule body (if applicable). "
+# "--- "
+# "*(Repeat for all generated rules)* "
+# "besides the following columns:"
+# f"{get_prompt_of_columns(TransformationRuleRow)} "
+# """,
+#    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/transformation_rules_{date_now}.md",
+#    agent=transformation_rule_generation_agent
+# )
 
 task_transformation_rule_validation = Task(
    description=(
@@ -258,6 +277,7 @@ The finalized, fully verified set of formal Transformation Rules ready for downs
 from crewai import Crew
 from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
 from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
 transformation_rules_team_task_1 = Crew(
    agents=[
       transformation_rule_generation_agent
@@ -267,7 +287,7 @@ transformation_rules_team_task_1 = Crew(
    ],
    process='sequential',
    knowledge_sources=[ # Enable knowledge by adding the sources here
-      knowledge_source_transformation_rule_patterns_v2
+      knowledge_of_rdb2rdf_views
    ] 
 )
 
@@ -281,7 +301,7 @@ transformation_rules_team_task_2 = Crew(
    ],
    process='sequential',
    knowledge_sources=[
-      knowledge_of_formal_entity_preserving_specification
+      knowledge_of_rdb2rdf_views
    ]
 )
 
@@ -296,7 +316,6 @@ transformation_rules_team_task_3 = Crew(
    ],
    process='sequential',
    knowledge_sources=[
-      knowledge_of_formal_entity_preserving_specification,
-      knowledge_source_transformation_rule_patterns_v2
+      knowledge_of_rdb2rdf_views
    ]
 )

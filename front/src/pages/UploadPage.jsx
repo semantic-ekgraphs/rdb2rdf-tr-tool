@@ -28,35 +28,35 @@ export default function UploadPage({ busy, onRunTask1 }) {
         <div>
           <h1>Stage 1 – Transformation Rule Generation</h1>
           <p>The objective of this stage is to transform an R2RML specification into a set of formally
-defined Transformation Rules (TRs) that conform to the conceptual framework.</p>
+defined Transformation Rules (TRs) that conform to the our conceptual framework.</p>
           
-          
-          <h1>Metadata Extraction and Normalization</h1>
-          <p>Select the two files required to start the first task of the workflow.</p>
+          <br/>
+          <h2>Metadata Extraction and Normalization</h2>
+          {/* <p>Select the two files required to start the first task of the workflow.</p> */}
         </div>
-        <span className="step-pill">1 de 3</span>
+        <span className="step-pill">1 of 3</span>
       </div>
 
       <form onSubmit={submit} className="surface-card">
         <div className="section-heading">
           <div>
             <h2>Input files</h2>
-            <p>The two files are used only during the execution of Task 1.</p>
+            {/* <p>The two files are used only during the execution of Task 1.</p> */}
           </div>
-          <span className="required-label">2 Required files</span>
+          {/* <span className="required-label">2 Required files</span> */}
         </div>
 
         <div className="upload-grid">
           <FileInput
             label="Relational schema"
-            description="Select the scheme source"
+            // description="Select the scheme source"
             file={file1}
             onChange={setFile1}
             accept=".sql,.csv,.json,.txt,.ttl,.rml,.yaml,.yml,.md"
           />
           <FileInput
             label="R2RML mappings"
-            description="Select the R2RML rules source"
+            // description="Select the R2RML rules source"
             file={file2}
             onChange={setFile2}
             accept=".ttl,.rml,.sql,.csv,.json,.txt,.yaml,.yml,.md"
@@ -69,9 +69,9 @@ defined Transformation Rules (TRs) that conform to the conceptual framework.</p>
         </div>
 
         <div className="form-footer">
-          <span className="muted">Accepted formats depend on the processing configured in the backend.</span>
+          {/* <span className="muted">Accepted formats depend on the processing configured in the backend.</span> */}
           <button className="button button-primary" type="submit" disabled={busy || !file1 || !file2}>
-            {busy ? <><span className="spinner" /> Executing Task 1...</> : <>Send files and Execute <span>→</span></>}
+            {busy ? <><span className="spinner" /> Executing Task 1...</> : <>Send files<span>→</span></>}
           </button>
         </div>
       </form>

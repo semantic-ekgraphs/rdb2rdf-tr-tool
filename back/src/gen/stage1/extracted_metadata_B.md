@@ -1,0 +1,12 @@
+| triples_map_id | logical_table | transformation_function | selection_condition | subject_template | subject_class | rdf_predicate | object_source | object_source_type | datatype | term_type | object_template | child_column | parent_column | foreign_key |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `<#ManufacturerMapping>` | `manufacturers` | — | — | `http://example.com{id}` | `schema:Organization` | `rdf:type` | `schema:Organization` (declared by `rr:class`; no relational column) | — | — | `rr:IRI` | — | — | — |
+| `<#ManufacturerMapping>` | `manufacturers` | — | — | `http://example.com{id}` | `schema:Organization` | `schema:name` | `name` | `VARCHAR(100) NOT NULL` | `xsd:string` | `rr:Literal` | — | — | — |
+| `<#ManufacturerMapping>` | `manufacturers` | — | — | `http://example.com{id}` | `schema:Organization` | `schema:url` | `homepage` | `VARCHAR(255)` | — (not explicitly specified) | `rr:IRI` | — | — | — |
+| `<#ProductMapping>` | `products` | — | — | `http://example.com{product_id}` | `schema:Product` | `rdf:type` | `schema:Product` (declared by `rr:class`; no relational column) | — | — | `rr:IRI` | — | — | — |
+| `<#ProductMapping>` | `products` | — | — | `http://example.com{product_id}` | `schema:Product` | `schema:name` | `title` | `VARCHAR(150) NOT NULL` | — (not explicitly specified) | `rr:Literal` | — | — | — |
+| `<#ProductMapping>` | `products` | — | — | `http://example.com{product_id}` | `schema:Product` | `schema:sku` | `sku` | `VARCHAR(50)` | — (not explicitly specified) | `rr:Literal` | — | — | — |
+| `<#ProductMapping>` | `products` | — | — | `http://example.com{product_id}` | `schema:Product` | `schema:price` | `price` | `DECIMAL(10, 2)` | `xsd:decimal` | `rr:Literal` | — | — | — |
+| `<#ProductMapping>` | `products` | — | — | `http://example.com{product_id}` | `schema:Product` | `schema:brand` | `manufacturers.id` (parent subject generated from `id`, reached through the join) | `INT` | — | `rr:IRI` | `http://example.com{id}` (parent subject template) | `brand_id` | `id` | Unnamed FK: `products(brand_id) REFERENCES manufacturers(id)` |
+
+No SQL transformation functions or selection conditions are specified. The schema declares the `brand_id` foreign key without a `CONSTRAINT` name, so no constraint name is reported.

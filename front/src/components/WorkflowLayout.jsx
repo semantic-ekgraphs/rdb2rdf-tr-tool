@@ -13,8 +13,8 @@ export default function WorkflowLayout({ stage, executionStage = stage, onNaviga
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">DP</div>
-          <div><strong>RDB2RDF Tool</strong><span>Workflow multiagente</span></div>
+          <div className="brand-mark">RIT</div>
+          <div><strong>RDB2RDF IVM Tool</strong><span>Multiagent Workflow</span></div>
         </div>
 
         <div className="sidebar-label">WORKFLOW</div>

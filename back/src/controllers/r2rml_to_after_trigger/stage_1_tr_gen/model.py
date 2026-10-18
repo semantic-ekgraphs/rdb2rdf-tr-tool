@@ -26,11 +26,14 @@ class TriplesMapParsing(BaseModel):
    rdf_predicate: Optional[str] = Field(default=None, 
                                         description="The mapped RDF/OWL property")   
    object_source: Optional[str] = Field(default=None, 
-                                        description="The column from rr:objectMap or of the attribute in the rr:subject template",
-                                        examples=["id from ```rr:subjectMap [ rr:class foaf:Person ; rr:template \"http://example.com/person/\{id\}#_\" ] .```", "track_count from ```rr:objectMap [ rr:column \"track_count\" ; rr:datatype xsd:int ] ; rr:predicate mo:track_count```"])
+                                        description="The column from rr:objectMap and the attribute between \{\} placeholder within rr:template in the rr:subject",
+                                        examples=["id from ```rr:subjectMap [ rr:template \"http://example.com/person/\{id\}#_\" ] .```", "track_count from ```rr:objectMap [ rr:column \"track_count\" ; rr:datatype xsd:int ] ;```"])
    object_source_type: Optional[str] = Field(default=None, 
-                                           description="The data type in relational schema",
-                                           examples=["SERIAL", "UUID", "UUID NOT NULL", "VARCHAR NOT NULL", "SMALLINT", "INTEGER", "TIMESTAMP", "BOOLEAN", "BOOLEAN NOT NULL"])
+                                           description="The data type of 'object_source' in the relational schema",
+                                           examples=["INT", "SERIAL", "UUID", "VARCHAR", "SMALLINT", "INTEGER", "TIMESTAMP", "BOOLEAN", "VARCHAR(50)"])
+   attribute_condition: Optional[str] = Field(default=None, 
+                                   description="The attribute condition",
+                                   examples=["NOT NULL", "UNIQUE", "PRIMARY KEY"])
    datatype: Optional[str] = Field(default=None, 
                                    description="The datatype from rr:objectMap")
    term_type: Optional[str] = Field(default=None, 
@@ -56,23 +59,50 @@ class TriplesMapParsingList(BaseModel):
 
 
 class EntityPreservationRow(BaseModel):
-   relation: str
-   pivot_relation: str
-   entity_preserving: bool
-   uri_function: str
-   relational_path: str
-   issue: str = ""
-   recommended_correction: str = ""
+   relation: str = Field(default=None, 
+                         description="The relation",
+                         examples=["company → rdf:type / schema:Organization"])
+   pivot_relation: str = Field(default=None, 
+                               description="The pivot relation")
+   entity_preserving: bool = Field(default=None, 
+                                   description="Verify whether entity identities are preserved. " \
+                                   "Write the result by concatenating 'Yes' or 'No', ' - ', and the very short justification.")
+   uri_function: str = Field(default=None, 
+                             description="Generates and validates URI construction functions")
+   relational_path: str = Field(default=None, 
+                                description="Analyzes relational paths", 
+                                examples=["fk_company_employee", "FK company(employee_id) REFERENCES employee(id)"])
+   issue: str = Field(default=None, 
+                      description="Detects constructs that violate the entity-preserving property")
+   recommended_correction: str = Field(default=None, 
+                                       description="Recommended list of corrections.")
 
 
 class TransformationRuleRow(BaseModel):
-   rule_id: str
-   rule_type: str
-   pivot_relation: str
-   relevant_relations: str
-   uri_function: str
-   predicate: str = ""
-   object_function: str = ""
-   relational_path: str = ""
-   selection_condition: str = ""
-   named_graph: str = ""
+   triples_map_id: str = Field(default=None, 
+                               description="The rr:TriplesMap identifier", 
+                               examples=["foaf:Person, <https://schema.org/Person>"]
+                        )
+   rule_id: str = Field(default=None, 
+                        description=("The transformation rule (TR) identifier, following the pattern 'tr-<pivot relation>-<sequential integer for the pivot relation>'"),
+                        examples=["tr-company-1", "tr-company-2", "tr-employee-1"]
+                  )
+   rule_type: str = Field(default=None, 
+                          description=("Analyze the mapping logic and classify it precisely into one of the four formal categories:\n"
+                           "- CTR;\n"
+                           "- OTR (regular or reification);\n"
+                           "- Local-DTR; or\n "
+                           "- Path-DTR.\n")
+                     )
+   pivot_relation: str = Field(default=None, 
+                               description="Identify the pivot relation that determines resource identity and subject URI generation"
+                        )
+   uri_constructor: str = Field(default=None, 
+                               description="the derived URI constructor and hasURI predicate"
+                        )
+   entity_preservation: str = Field(default=None, 
+                                 description="records the entity-preservation analysis"
+                              )
+   formula: str = Field(default=None, 
+                        description=" Construct the formal TR specification using the appropriate Global URI Predicates and auxiliary built-ins"
+                  )

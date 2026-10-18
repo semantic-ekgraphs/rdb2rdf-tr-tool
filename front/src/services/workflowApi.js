@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000" || "http://localhost:3001" ;
 
 async function readResponse(response) {
   const data = await response.json().catch(() => ({}));
@@ -9,11 +9,13 @@ async function readResponse(response) {
 }
 
 export async function executeTask1(file1, file2) {
+  console.log('call task 1')
   const form = new FormData();
   form.append("file1", file1);
   form.append("file2", file2);
-
-  const response = await fetch(`${API_BASE}/api/workflow/task-1`, {
+  
+  const response = await fetch(`${API_BASE}/r2rml-to-tr/metadata-extraction/`, {
+  // const response = await fetch(`${API_BASE}/api/workflow/task-1`, {
     method: "POST",
     body: form,
   });

@@ -14,7 +14,7 @@ export default function WorkflowLayout({ stage, onNavigate, children, status, wo
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">DP</div>
-          <div><strong>RDB2RDF Tool</strong><span>Workflow multiagente</span></div>
+          <div><strong>RDB2RDF Tool</strong><span>Workflow multiagent</span></div>
         </div>
 
         <div className="sidebar-label">WORKFLOW</div>

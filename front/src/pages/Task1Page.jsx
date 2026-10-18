@@ -7,8 +7,8 @@ export default function Task1Page({ result, busy, reviewBusy, notice, error, onF
       <div className="page-intro">
         <div>
           
-          <h1>Task 1 OUTPUT</h1>
-          <p>Inspect the output of the first task. You can request a review or proceed with the current result..</p>
+          <h1>Extracted Metadata</h1>
+          <p>Inspect the output. You can request a review or proceed with the current result.</p>
         </div>
         <span className={`status-pill ${result ? "status-success" : "status-pending"}`}>{result ? "Resultado disponível" : "Aguardando execução"}</span>
       </div>
@@ -27,7 +27,7 @@ export default function Task1Page({ result, busy, reviewBusy, notice, error, onF
 
       <div className="bottom-navigation">
         <button type="button" className="button button-light" onClick={onBack} disabled={busy}>← Voltar aos arquivos</button>
-        <span className="muted">Task 2 will not be executed prior to your confirmation..</span>
+        <span className="muted">Task 2 will not be executed prior to your confirmation.</span>
       </div>
     </div>
   );

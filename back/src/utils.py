@@ -96,7 +96,7 @@ def get_prompt_of_a_pydantic_model(dict_model:dict[str, FieldInfo]):
 	for field in dict_model.model_fields:
 		_return += f"- {dict_model.model_fields[field].description} to fill in field {field}\n"
 		if dict_model.model_fields[field].examples:
-			_return += f"\tExample: {dict_model.model_fields[field].examples}\n"
+			_return += f"\tExample(s): {dict_model.model_fields[field].examples}\n"
 	return _return
 
 

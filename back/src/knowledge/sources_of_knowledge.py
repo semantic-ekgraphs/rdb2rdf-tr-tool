@@ -29,3 +29,8 @@ knowledge_source_of_maintanance_queue_infrastructure = PDFKnowledgeSource(
 knowledge_source_of_algorithm_1 = PDFKnowledgeSource(
    file_paths=["algorithm-1-compute-delta-r.pdf"]
 )
+
+
+knowledge_of_rdb2rdf_views = PDFKnowledgeSource(
+   file_paths=["rdb2rdf-views.pdf"]
+)

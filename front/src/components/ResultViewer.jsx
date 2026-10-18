@@ -200,7 +200,7 @@ export default function ResultViewer({ result, title = "Resultado da task" }) {
     <section className="result-panel">
       <div className="result-panel-header">
         <div>
-          <span className="eyebrow">SAÍDA</span>
+          {/* <span className="eyebrow">SAÍDA</span> */}
           <h3>{title}</h3>
         </div>
         <div className="result-actions">

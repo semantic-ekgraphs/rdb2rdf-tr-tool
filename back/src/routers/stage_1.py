@@ -11,7 +11,7 @@ router  = APIRouter(
 @router.get("/metadata-extraction/", 
             description="Route to extract R2RML metadata.")
 async def extract_metadata():  
-   return await tr_gen_controller.extract_metadata()
+   return await tr_gen_controller.extract_metadata("a_r2rml.ttl", "a_schema.sql")
 
 
 
@@ -28,22 +28,22 @@ async def generates_transformation_rules():
    return await tr_gen_controller.generates_transformation_rules()
 
 
-
+from fastapi import FastAPI, File, UploadFile
 @router.post("/metadata-extraction/", 
             description="Route to extract R2RML metadata.")
-async def extract_metadata(file1: str,file2: str):  
-   return await tr_gen_controller.extract_metadata(file1,file2)
+async def extract_metadata(file1: UploadFile,file2: UploadFile):  
+   return await tr_gen_controller.extract_metadata(file1.filename,file2.filename)
 
 
 
-@router.post("/entitiy-preservation-analysis/", 
-            description="Route to analyzes entity-preservation from extracted metadata.")
-async def analyzes_entity_preservation():  
-   return await tr_gen_controller.analyzes_entity_preservation()
+# @router.post("/entitiy-preservation-analysis/", 
+#             description="Route to analyzes entity-preservation from extracted metadata.")
+# async def analyzes_entity_preservation():  
+#    return await tr_gen_controller.analyzes_entity_preservation()
 
 
 
-@router.post("/tr-gen/", 
-            description="Route to convert R2RML mapping to transformation r ules.")
-async def generates_transformation_rules():  
-   return await tr_gen_controller.generates_transformation_rules()
+# @router.post("/tr-gen/", 
+#             description="Route to convert R2RML mapping to transformation r ules.")
+# async def generates_transformation_rules():  
+#    return await tr_gen_controller.generates_transformation_rules()
