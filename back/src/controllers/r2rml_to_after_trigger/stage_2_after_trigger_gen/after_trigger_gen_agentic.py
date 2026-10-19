@@ -133,19 +133,23 @@ from .model import StaticVerificationRow
 trigger_synthesis_task = Task(
    description=(
       "Based on the provided trigger execution plan and Transformation Rules, "
-      "generates the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions, " 
-      "implementing the incremental maintenance Algorithm 1.\n\n"
+      "generates the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions for updates on a relation $R$, " 
+      "implementing the incremental maintenance Algorithm 2: Function Compute_Changeset_R for the Asynchronous Architecture.\n\n"
+      "The  function Compute_Changeset_$R$ is responsible for computing RDF incremental maintenance information for updates on a relation $R$."
+      "Algorithm 1 MUST be used only as the formal basis for the definitions of relevance, affected pivot tuples, S1, S2, and the per-rule insertion and deletion contributions."
+      "The trigger MUST NOT implement the operations assigned by Algorithm 2 to the asynchronous worker."
       "Input Context:\n"
       "<trigger execution plan>{trigger_execution_plan}\n</trigger execution plan>\n\n"
       "<Transformation Rules>{transformation_rules}\n</Transformation Rules>"
       "Your synthesis of AFTER triggers PL/pgSQL must implement the following architectural requirements:\n"
-      "1. Utilize statement-level transition tables (`REFERENCING OLD TABLE AS OLD_R NEW TABLE AS NEW_R`) "
-      "to capture snapshots of update events over relation R ($\Delta^-$ and $\Delta^+$).\n"
+      "1. Utilize statement-level transition tables (`REFERENCING OLD TABLE AS OLD_$R$ NEW TABLE AS NEW_$R$`) "
+      "to capture snapshots of update events over relation $R$ ($\Delta^-$ and $\Delta^+$).\n"
       "2. Compute the affected tuples for removal ($A^-[\Psi](u)$).\n"
       "3. Compute the affected tuples for insertion ($A^+[\Psi](u)$).\n"
       "4. Compute the post-update contributions ($S2[\Psi](u)$) for each relevant rule $\Psi$.\n"
       "5. Compute the final insertion ($\Delta^+(u)$) and deletion changesets.\n"
-      "6. Construct clean, production-ready SQL statements that populate the asynchronous maintenance queue."
+      "6. Construct clean, production-ready SQL statements that populate the asynchronous maintenance queue according 'Infrastructure for the Maintenance Queue'\n"
+      "7. The rule contributions of each rule should be stored in JSON format, and should follow the templates presented in  'Infrastructure for the Maintenance Queue'" \
    ),
    expected_output="""
 A structured PostgreSQL Trigger Implementation Report in Markdown format (.md).
@@ -158,7 +162,7 @@ The report must follow this exact structure:
 
 ## 1. Synthesis Overview
 - **Target Relation(s)**: List of database relation(s) processed (e.g., Relation R).
-- **Architecture Compliance**: Confirmation of statement-level transition table usage (`REFERENCING OLD TABLE / NEW TABLE`) and asynchronous maintenance queue population.
+- **Architecture Compliance**: Confirmation of statement-level transition table usage (`REFERENCING OLD TABLE / NEW TABLE`) and asynchronous maintenance queue population according 'Infrastructure for the Maintenance Queue'.
 
 ## 2. Trigger Execution & Component Computation
 Detailed breakdown of the implemented logic for the generated SQL code:
@@ -255,6 +259,7 @@ from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving
 from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 from knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
 from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
+from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_2
 from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
 
 after_trigger_gen_team_1 = Crew(
@@ -283,6 +288,7 @@ after_trigger_gen_team_2 = Crew(
    process='sequential',
    knowledge_sources=[
       knowledge_of_rdb2rdf_views,
+      knowledge_source_of_algorithm_2,
       knowledge_source_of_algorithm_1,
       knowledge_source_of_maintanance_queue_infrastructure,
    ],

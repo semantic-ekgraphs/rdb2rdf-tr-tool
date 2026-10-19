@@ -23,11 +23,15 @@ transformation_rules_formalism = TextFileKnowledgeSource(
 
 
 knowledge_source_of_maintanance_queue_infrastructure = PDFKnowledgeSource(
-   file_paths=["Infrastructure for the Maintenance Queue.pdf"]
+   file_paths=["Maintenance-Queue-Infrastructure.pdf"]
 )
 
 knowledge_source_of_algorithm_1 = PDFKnowledgeSource(
    file_paths=["algorithm-1-compute-delta-r.pdf"]
+)
+
+knowledge_source_of_algorithm_2 = PDFKnowledgeSource(
+   file_paths=["algorithm-2-compute-changeset-r.pdf"]
 )
 
 
