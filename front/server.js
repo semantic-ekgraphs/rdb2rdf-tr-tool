@@ -96,12 +96,14 @@ app.get("/api/workflow/definition", (_req, res) => {
       {
         id: "Transfomation Rule agent",
         name: "Transformation Rule Generation",
-        description: "Preparação e análise das regras de transformação",
+        // description: "Preparation and analysis of transformation rules",
+        description: "",
         tasks: [
           { 
           id: "upload", 
           name: "Enviar arquivos", 
-          description: "Schema e mapeamento", 
+          // description: "Schema e mapeamento", 
+          description: "Schema & mappings", 
           stage: 0, kind: "input", 
           screen: { type: "upload" } 
           },

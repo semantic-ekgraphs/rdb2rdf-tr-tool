@@ -1,0 +1,30 @@
+## Declarative incremental-maintenance plan
+
+**Relevance and occurrence convention:** A rule is relevant to relation \(R\) if \(R\) is its pivot relation or occurs as a relation on its relational path. “Multiple path occurrences” means that \(R\) occurs more than once on that rule’s path; the pivot occurrence alone is not counted as a repeated path occurrence. No rule here has multiple occurrences.
+
+### Relation: `manufacturers`
+
+| relation | relevant_rules | rule_classification | multiple_path_occurrences | maintenance_components |
+|---|---|---|---|---|
+| `manufacturers → rdf:type / schema:Organization` | `tr-manufacturers-1` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted manufacturer pivot tuples. Evaluate the rule’s old and post-update contributions using the manufacturer URI constructor. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. |
+| `manufacturers → schema:name` | `tr-manufacturers-2` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted manufacturer pivot tuples. Evaluate the old and post-update contributions using the stated `name` literal mapping. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. |
+| `manufacturers → schema:url` | `tr-manufacturers-3` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted manufacturer pivot tuples. Evaluate the old and post-update contributions using the stated `homepage` non-null test and `RDFIRI` mapping. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. This rule is retained as supplied, but is marked **OTR-shaped, nonconforming**: its formula has no FK-backed path to a represented entity. |
+| `manufacturers → products.brand → manufacturers` (the `schema:brand` rule’s manufacturer endpoint) | `tr-products-5` | `relation-relevant` | No | Manufacturer-side changes can affect `schema:brand` contributions for products connected through the declared `products.brand_id → manufacturers.id` foreign key. Identify affected product pivot tuples through that FK using the relevant before- and after-update manufacturer states. Compute old contributions for removals and post-update contributions (\(S2\)) for additions. Include relation-side additions in \(\Delta^+_{\text{rel}}\), relation-side removals in \(\Delta^-\), and combine these with any pivot-side deltas in the final changesets. |
+
+For this relation, \(Relev(\texttt{manufacturers}) = \{\texttt{tr-manufacturers-1}, \texttt{tr-manufacturers-2}, \texttt{tr-manufacturers-3}, \texttt{tr-products-5}\}\). The first three rules are pivot-relevant; `tr-products-5` is relation-relevant because `manufacturers` is the referenced endpoint of its relational path.
+
+### Relation: `products`
+
+| relation | relevant_rules | rule_classification | multiple_path_occurrences | maintenance_components |
+|---|---|---|---|---|
+| `products → rdf:type / schema:Product` | `tr-products-1` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted product pivot tuples. Evaluate the old and post-update contributions using the product URI constructor. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. |
+| `products → schema:name` | `tr-products-2` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted product pivot tuples. Evaluate the old and post-update contributions using the stated `title` literal mapping. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. |
+| `products → schema:sku` | `tr-products-3` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted product pivot tuples. Evaluate the old and post-update contributions using the stated `sku` literal mapping. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. |
+| `products → schema:price` | `tr-products-4` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted product pivot tuples. Evaluate the old and post-update contributions using the stated `price` literal mapping. Include the resulting pivot-side additions and removals in \(\Delta^+_{\text{pivot}}\) and \(\Delta^-\), respectively. |
+| `products → schema:brand → manufacturers` | `tr-products-5` | `pivot-relevant` | No | Compute \(A^-\) and \(A^+\) from the deleted and inserted product pivot tuples. For this rule, evaluate old contributions using the old product tuples and their FK-connected manufacturer tuples; evaluate post-update contributions (\(S2\)) using the inserted product tuples and the corresponding current manufacturer tuples. Include the resulting additions in \(\Delta^+_{\text{pivot}}\) and removals in \(\Delta^-\). There are no relation-side rules for `products` in this rule set, so \(\Delta^+_{\text{rel}}\) is empty for a `products`-pivot maintenance plan. |
+
+For this relation, \(Relev(\texttt{products}) = \{\texttt{tr-products-1}, \texttt{tr-products-2}, \texttt{tr-products-3}, \texttt{tr-products-4}, \texttt{tr-products-5}\}\). All five rules are pivot-relevant. `tr-products-5` uses the FK path to `manufacturers`, but `products` occurs only once on that path, so it has no multiple path occurrences.
+
+### Changeset assembly
+
+For either relation, the final \(\Delta^+\) and \(\Delta^-\) are the net RDF insertions and deletions obtained by combining the applicable pivot-side and relation-side contributions. In particular, the plan distinguishes \(\Delta^+_{\text{pivot}}\) from \(\Delta^+_{\text{rel}}\); \(\Delta^+_{\text{rel}}\) is needed here for manufacturer-side maintenance of `tr-products-5`, while it is empty for product-side maintenance. No SQL, named graph, or additional mapping behavior is specified or assumed.

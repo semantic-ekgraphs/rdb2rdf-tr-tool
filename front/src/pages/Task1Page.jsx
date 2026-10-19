@@ -6,9 +6,8 @@ export default function Task1Page({ result, busy, reviewBusy, notice, error, onF
     <div className="page-stack">
       <div className="page-intro">
         <div>
-          
-          <h1>Extracted Metadata</h1>
-          <p>Inspect the output. You can request a review or proceed with the current result.</p>
+          <h1>Metadata Extraction Output</h1>
+          {/* <p>Inspect the output. You can request a review or proceed with the current result.</p> */}
         </div>
         <span className={`status-pill ${result ? "status-success" : "status-pending"}`}>{result ? "Resultado disponível" : "Aguardando execução"}</span>
       </div>
@@ -16,7 +15,7 @@ export default function Task1Page({ result, busy, reviewBusy, notice, error, onF
       {error && <div className="alert alert-error">{error}</div>}
       {notice && <div className="alert alert-info">{notice}</div>}
 
-      <ResultViewer result={result} title="Output of the first task" />
+      <ResultViewer result={result} title="Extracted Metadata" />
 
       <FeedbackPanel
         busy={reviewBusy || busy}
@@ -26,8 +25,9 @@ export default function Task1Page({ result, busy, reviewBusy, notice, error, onF
       />
 
       <div className="bottom-navigation">
-        <button type="button" className="button button-light" onClick={onBack} disabled={busy}>← Voltar aos arquivos</button>
-        <span className="muted">Task 2 will not be executed prior to your confirmation.</span>
+        <button type="button" className="button button-light" onClick={onBack} disabled={busy}>← Return to the archives</button>
+        {/* <button type="button" className="button button-light" onClick={onBack} disabled={busy}>← Voltar aos arquivos</button> */}
+        {/* <span className="muted">Task 2 will not be executed prior to your confirmation.</span> */}
       </div>
     </div>
   );

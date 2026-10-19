@@ -14,16 +14,20 @@ export default function FeedbackPanel({ busy, onFeedback, onApprove, disabled = 
       <div className="review-heading">
         <div className="review-icon">↻</div>
         <div>
-          <h3>Revisão humana (HITL)</h3>
-          <p>Você pode solicitar ajustes ou seguir com a saída atual.</p>
+          <h3>Human-in-the-loop (HITL)</h3>
+          <p>You can request adjustments or proceed with the current output.</p>
+          {/* <h3>Revisão humana (HITL)</h3>
+          <p>Você pode solicitar ajustes ou seguir com a saída atual.</p> */}
         </div>
       </div>
-      <label htmlFor="feedback">Instruções de revisão</label>
+      <label htmlFor="feedback">Review instructions</label>
+      {/* <label htmlFor="feedback">Instruções de revisão</label> */}
       <textarea
         id="feedback"
         value={feedback}
         onChange={(event) => setFeedback(event.target.value)}
-        placeholder="Ex.: corrija os nomes das propriedades, preserve estas entidades..."
+        // placeholder="Ex.: corrija os nomes das propriedades, preserve estas entidades..."
+        placeholder="E.g., correct the property names, preserve these entities..."
         rows={4}
         disabled={busy || disabled}
       />
@@ -34,7 +38,8 @@ export default function FeedbackPanel({ busy, onFeedback, onApprove, disabled = 
           onClick={submitFeedback}
           disabled={busy || disabled || !feedback.trim()}
         >
-          {busy ? "Enviando..." : "Enviar feedback"}
+          {busy ? "Sending..." : "Send feedback"}
+          {/* {busy ? "Enviando..." : "Enviar feedback"} */}
         </button>
         <button
           type="button"
@@ -42,12 +47,13 @@ export default function FeedbackPanel({ busy, onFeedback, onApprove, disabled = 
           onClick={onApprove}
           disabled={busy || disabled}
         >
-          Avançar sem alterações <span aria-hidden="true">→</span>
+          Proceed without changes <span aria-hidden="true">→</span>
+          {/* Avançar sem alterações <span aria-hidden="true">→</span> */}
         </button>
       </div>
-      <p className="helper-text">
+      {/* <p className="helper-text">
         O feedback é registrado separadamente da aprovação. Para que ele regenere a saída automaticamente, conecte o endpoint real de revisão do seu FastAPI.
-      </p>
+      </p> */}
     </section>
   );
 }

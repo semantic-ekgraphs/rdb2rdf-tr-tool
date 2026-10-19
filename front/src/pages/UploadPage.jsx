@@ -26,9 +26,10 @@ export default function UploadPage({ busy, onRunTask1 }) {
     <div className="page-stack">
       <div className="page-intro">
         <div>
-          <h1>Stage 1 – Transformation Rule Generation</h1>
-          <p>The objective of this stage is to transform an R2RML specification into a set of formally
-defined Transformation Rules (TRs) that conform to the our conceptual framework.</p>
+          <h1>Transformation Rule Generation</h1>
+          <p>
+            In this stage, R2RML mappings are transformed into a set of Transformation Rules (TRs).
+          </p>
           
           <br/>
           <h2>Metadata Extraction and Normalization</h2>
@@ -65,7 +66,7 @@ defined Transformation Rules (TRs) that conform to the our conceptual framework.
 
         <div className="info-strip">
           <span className="info-mark">i</span>
-          <span>Following Task 1, the next stage will receive exclusively the confirmed output from the first task.</span>
+          <span>Following Task 1, the next task will receive exclusively the confirmed output from the first task.</span>
         </div>
 
         <div className="form-footer">

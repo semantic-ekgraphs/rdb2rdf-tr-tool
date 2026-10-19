@@ -14,7 +14,7 @@ export default function WorkflowLayout({ stage, executionStage = stage, onNaviga
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">RIT</div>
-          <div><strong>RDB2RDF IVM Tool</strong><span>Multiagent Workflow</span></div>
+          <div><strong>RDB2RDF IVM Tool</strong><span>LLM Multiagent</span></div>
         </div>
 
         <div className="sidebar-label">WORKFLOW</div>
@@ -52,7 +52,10 @@ export default function WorkflowLayout({ stage, executionStage = stage, onNaviga
                       onClick={() => enabled && onNavigate(taskStage)} disabled={!enabled}
                       title={task.description || task.name}>
                       <span className="step-number">{done ? "✓" : taskStage >= 0 ? taskStage + 1 : "·"}</span>
-                      <span className="step-copy"><strong>{task.name}</strong><small>{task.description || "Etapa do workflow"}</small></span>
+                      <span className="step-copy">
+                        <strong>{task.name}</strong>
+                        {/* <small>{task.description || "Workflow Task"}</small> */}
+                      </span>
                     </button>;
                   })}
                 </div>}
@@ -69,8 +72,12 @@ export default function WorkflowLayout({ stage, executionStage = stage, onNaviga
 
       <main className="main-area">
         <header className="topbar">
-          <div><span className="eyebrow">WORKSPACE </span><div className="topbar-title">{workflow.title || "Transformation workflow"}</div></div>
-          <span className="environment-tag"><span /> Ambiente de desenvolvimento</span>
+          <div>
+            <span className="eyebrow">WORKSPACE </span>
+            {/* <div className="topbar-title">{workflow.title || "Stage 1"}</div> */}
+            <div className="topbar-title">Stage 1</div>
+          </div>
+          <span className="environment-tag"><span />Development environment</span>
         </header>
         <div className="page-content">{children}</div>
       </main>

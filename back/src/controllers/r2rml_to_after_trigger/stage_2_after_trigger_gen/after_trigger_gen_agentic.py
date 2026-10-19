@@ -1,7 +1,7 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
 from llms import gpt_4o_mini_openai, gpt_6_luna_openai
-from src.utils import get_prompt_of_columns
+from src.utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
 from src.constants import TEXTS
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -80,42 +80,44 @@ ivm_critic_agent = Agent(
 ### TASK 1 | STAGE 2
 ### ==========================================
 # provided relational schema and
+"1. Compute the set $Relev(R)$ of all relevant Transformation Rules.\n"
+# "2. Classify each rule in the set as 'pivot-relevant' or 'relation-relevant'.\n"
+# "3. Identify whether multiple occurrences of relation $R$ exist in the rule's relational path.\n"
+# "4. Map and specify which formal maintenance components must be computed by the trigger, "
+# "including: affected pivot tuples for deletion ($A^-$), affected pivot tuples for insertion ($A^+$), "
+# "post-update contributions ($S2$), and final insertion ($\Delta^+$) and deletion ($\Delta^-$) changesets.\n\n"
+# "Consolidate all analyses into a declarative execution plan that will directly guide the trigger synthesis agent."
+#---
+# "The response MUST contain exclusively the Markdown structure, with no introductory text or footnotes outside the report.\n\n"
+      # "For each relation $R$ in the relational schema, the output must present the following structure:\n"
+      # "# Declarative Trigger Maintenance Plan for Relation: [Relation Name R]\n"
+      # "## 1. Relevant Rules Mapping ($Relev(R)$)\n"
+      # "List of all Transformation Rules (TRs) affected by updates on relation R. For each rule:\n"
+      # "- **Rule ID**: Rule identifier (e.g., $\psi\_track\_01$).\n"
+      # "- **Relevance Classification**: Strictly classify as `pivot-relevant` (if R is the pivot relation) or `relation-relevant` (if R participates in the relational path).\n"
+      # "- **Relational Path Occurrences**: Indicate whether relation R appears once or multiple times in the rule's relational path.\n\n"
+      # "## 2. Maintenance Components to Be Computed\n"
+      # "Declarative specification of the algebraic structures required for incremental maintenance:\n"
+      # "- **Affected Pivot Tuples for Deletion ($A^-$)**: Definition of the query/expression to isolate removed pivot tuples.\n"
+      # "- **Affected Pivot Tuples for Insertion ($A^+$)**: Definition of the query/expression to isolate new pivot tuples.\n"
+      # "- **Post-Update Contributions ($S2$)**: Mapping of the post-update state V2 to validate stability and resource support.\n"
+      # "- **Deletion and Insertion Changesets ($\Delta^-$ and $\Delta^+$)**: Definition of the final RDF triples/quads deltas to be recorded in the queue.\n"
 from .model import TriggerPlanRow
 task_trigger_planning = Task(
    description=(
       "Analyze the set of transformation rules "
-      "to determine the incremental maintenance strategy required for each database pivot relation $R$ present in the compiled transformation rules "
+      "to determine the incremental maintenance strategy required for each database pivot relation $R$ present in the Transformation Rules "
       "without generating SQL code at this stage.\n\n"
-      "For each pivot relation $R$, you must:\n"
-      "1. Compute the set $Relev(R)$ of all relevant Transformation Rules.\n"
-      "2. Classify each rule in the set as 'pivot-relevant' or 'relation-relevant'.\n"
-      "3. Identify whether multiple occurrences of relation $R$ exist in the rule's relational path.\n"
-      "4. Map and specify which formal maintenance components must be computed by the trigger, "
-      "including: affected pivot tuples for deletion ($A^-$), affected pivot tuples for insertion ($A^+$), "
-      "post-update contributions ($S2$), and final insertion ($\Delta^+$) and deletion ($\Delta^-$) changesets.\n\n"
-      "Consolidate all analyses into a declarative execution plan that will directly guide the trigger synthesis agent."
+      "For each pivot relation $R$ in <Transformation Rules>, you must:\n"
+       f"{get_prompt_of_a_pydantic_model(TriggerPlanRow)}\n\n"
       "Inputs:"
       "<Transformation Rules>{transformation_rules}</Transformation Rules>\n\n"
       "<Relational Schema>{rdb_schema}</Relational Schema>"
    ),
    expected_output=(
       "A structured report in Markdown format (.md) containing the declarative trigger execution plan for each analyzed relation R. "
-      "The response MUST contain exclusively the Markdown structure, with no introductory text or footnotes outside the report.\n\n"
-      "For each relation $R$ in the relational schema, the output must present the following structure:\n"
-      "# Declarative Trigger Maintenance Plan for Relation: [Relation Name R]\n"
-      "## 1. Relevant Rules Mapping ($Relev(R)$)\n"
-      "List of all Transformation Rules (TRs) affected by updates on relation R. For each rule:\n"
-      "- **Rule ID**: Rule identifier (e.g., $\psi\_track\_01$).\n"
-      "- **Relevance Classification**: Strictly classify as `pivot-relevant` (if R is the pivot relation) or `relation-relevant` (if R participates in the relational path).\n"
-      "- **Relational Path Occurrences**: Indicate whether relation R appears once or multiple times in the rule's relational path.\n\n"
-      "## 2. Maintenance Components to Be Computed\n"
-      "Declarative specification of the algebraic structures required for incremental maintenance:\n"
-      "- **Affected Pivot Tuples for Deletion ($A^-$)**: Definition of the query/expression to isolate removed pivot tuples.\n"
-      "- **Affected Pivot Tuples for Insertion ($A^+$)**: Definition of the query/expression to isolate new pivot tuples.\n"
-      "- **Post-Update Contributions ($S2$)**: Mapping of the post-update state V2 to validate stability and resource support.\n"
-      "- **Deletion and Insertion Changesets ($\Delta^-$ and $\Delta^+$)**: Definition of the final RDF triples/quads deltas to be recorded in the queue.\n"
       "---"
-      "*(Repeat the structure above for all relations R present in the transformation rules in the following columns:"
+      "*(Repeat for all relations R present in the transformation rules, following the columns:"
       f"{get_prompt_of_columns(TriggerPlanRow)})*"
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage2/trigger_execution_plan_{date_now}.md",
@@ -130,19 +132,18 @@ task_trigger_planning = Task(
 from .model import StaticVerificationRow
 trigger_synthesis_task = Task(
    description=(
-      "Based on the provided declarative trigger execution plan and Transformation Rules, "
-      "generate the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions.\n\n"
-      "Input Context Required:\n"
-      "- Declarative trigger execution plan (from Stage 2.1)\n"
-      "- Transformation Rules (from Stage 1)\n\n"
+      "Based on the provided trigger execution plan and Transformation Rules, "
+      "generates the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions, " 
+      "implementing the incremental maintenance Algorithm 1.\n\n"
+      "Input Context:\n"
       "<trigger execution plan>{trigger_execution_plan}\n</trigger execution plan>\n\n"
       "<Transformation Rules>{transformation_rules}\n</Transformation Rules>"
-      "Your synthesis MUST implement the following architectural requirements:\n"
-      "1. Utilize statement-level transition tables (`REFERENCING OLD TABLE AS ... NEW TABLE AS ...`) "
+      "Your synthesis of AFTER triggers PL/pgSQL must implement the following architectural requirements:\n"
+      "1. Utilize statement-level transition tables (`REFERENCING OLD TABLE AS OLD_R NEW TABLE AS NEW_R`) "
       "to capture snapshots of update events over relation R ($\Delta^-$ and $\Delta^+$).\n"
       "2. Compute the affected tuples for removal ($A^-[\Psi](u)$).\n"
-      "3. Compute the post-update contributions ($S2[\Psi](u)$) for each relevant rule $\Psi$.\n"
-      "4. Compute the affected tuples for insertion ($A^+[\Psi](u)$).\n"
+      "3. Compute the affected tuples for insertion ($A^+[\Psi](u)$).\n"
+      "4. Compute the post-update contributions ($S2[\Psi](u)$) for each relevant rule $\Psi$.\n"
       "5. Compute the final insertion ($\Delta^+(u)$) and deletion changesets.\n"
       "6. Construct clean, production-ready SQL statements that populate the asynchronous maintenance queue."
    ),
@@ -163,8 +164,8 @@ The report must follow this exact structure:
 Detailed breakdown of the implemented logic for the generated SQL code:
 - **Snapshot Capture**: Description of how transition tables ($\Delta^-$ and $\Delta^+$) capture update event snapshots.
 - **Affected Deletion Tuples ($A^-[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for deletion.
-- **Post-Update Contributions ($S2[\Psi](u)$)**: Implementation logic computing post-update RDF states for rule $\Psi$.
 - **Affected Insertion Tuples ($A^+[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for insertion.
+- **Post-Update Contributions ($S2[\Psi](u)$)**: Implementation logic computing post-update RDF states for rule $\Psi$.
 - **Changesets Computation ($\Delta^+(u)$ and $\Delta^-(u)$)**: Final aggregation logic for insertion and deletion changesets.
 
 ## 3. Asynchronous Maintenance Queue Integration
@@ -254,6 +255,7 @@ from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving
 from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 from knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
 from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
+from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
 
 after_trigger_gen_team_1 = Crew(
    agents=[
@@ -264,11 +266,10 @@ after_trigger_gen_team_1 = Crew(
    ],
    process='sequential',
    knowledge_sources=[
-         knowledge_of_formal_entity_preserving_specification,
-         knowledge_source_transformation_rule_patterns_v2,
+         knowledge_of_rdb2rdf_views,
+         knowledge_source_of_algorithm_1,
          knowledge_source_of_maintanance_queue_infrastructure,
-         knowledge_source_of_algorithm_1
-      ], # Enable knowledge by adding the sources here
+      ], 
 )
 
 
@@ -281,10 +282,9 @@ after_trigger_gen_team_2 = Crew(
    ],
    process='sequential',
    knowledge_sources=[
-      knowledge_of_formal_entity_preserving_specification,
-      knowledge_source_transformation_rule_patterns_v2,
+      knowledge_of_rdb2rdf_views,
+      knowledge_source_of_algorithm_1,
       knowledge_source_of_maintanance_queue_infrastructure,
-      knowledge_source_of_algorithm_1
    ],
 )
 
@@ -298,8 +298,7 @@ after_trigger_gen_team_3 = Crew(
    ],
    process='sequential',
    knowledge_sources=[
-      knowledge_of_formal_entity_preserving_specification,
-      knowledge_source_transformation_rule_patterns_v2,
+      knowledge_of_rdb2rdf_views,
       knowledge_source_of_maintanance_queue_infrastructure,
       knowledge_source_of_algorithm_1
    ],

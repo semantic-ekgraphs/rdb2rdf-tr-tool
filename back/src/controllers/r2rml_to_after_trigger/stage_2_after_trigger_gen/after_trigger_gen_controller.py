@@ -18,11 +18,11 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 async def plan_after_trigger() -> str:
    print(console('plan_after_trigger()'))
    
-   generated_tr_file = get_path_of_generated_file("transformation_rules.md")
-   rdb_schema_file   = get_path_of_file_from_temp("mbz_schema_short.sql")
+   generated_tr_file = get_path_of_generated_file("stage1/transformation_rules.md")
+   rdb_schema_file   = get_path_of_file_from_temp("a_schema.sql")
    
    generated_tr_content = read_txt_file(generated_tr_file)
-   rdb_schema_content  = read_txt_file(rdb_schema_file)
+   rdb_schema_content   = read_txt_file(rdb_schema_file)
 
    inputs = {
       'transformation_rules':  generated_tr_content,
@@ -47,11 +47,11 @@ async def plan_after_trigger() -> str:
 async def synthesizes_verifies_trigger() -> str:
    print(console('synthesizes_verifies_trigger()'))
    
-   trigger_execution_plan_file = get_path_of_generated_file("trigger_execution_plan.md")
-   generated_tr_file           = get_path_of_generated_file("transformation_rules.md")
+   generated_tr_file           = get_path_of_generated_file("stage1/transformation_rules.md")
+   trigger_execution_plan_file = get_path_of_generated_file("stage2/trigger_execution_plan.md")
    
-   trigger_execution_plan_content = read_txt_file(trigger_execution_plan_file)
    generated_tr_content           = read_txt_file(generated_tr_file)
+   trigger_execution_plan_content = read_txt_file(trigger_execution_plan_file)
 
    inputs = {
       'trigger_execution_plan': trigger_execution_plan_content,

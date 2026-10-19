@@ -22,20 +22,25 @@ export const DEFAULT_WORKFLOW = {
     // Para adicionar outra task a este agente, inclua-a em tasks e use um stage
     // que tenha uma tela/handler implementado em App.jsx.
     {
-      id: "Transformation RUle agent",
+      id: "Transformation Rule agent",
       name: "Transformation Rule Generation",
-      description: "Preparação e análise das regras de transformação",
+      // description: "Preparation and analysis of transformation rules",
+      description: "",
       tasks: [
-        { id: "upload", 
-          name: "Enviar arquivos", 
-          description: "Schema e mapeamento", 
+        {
+          id: "upload", 
+          name: "Send Files",
+          // name: "Enviar arquivos", 
+          // description: "Schema & mappings....", 
+          // description: "Schema e mapeamento", 
           stage: 0, kind: "input", 
           screen: { type: "upload" } 
         },
         {
           id: "task-1",
           name: "Metadata Extraction and Normalization",
-          description: "Extração e normalização dos metadados",
+          description: "R2RML & schema metadata",
+          // description: "Extração e normalização dos metadados",
           stage: 1,
           execution: { endpoint: "/api/workflow/task-1" },
           screen: { type: "result-review" }
@@ -43,7 +48,8 @@ export const DEFAULT_WORKFLOW = {
         {
           id: "task-2",
           name: "Entity Preservation Analysis",
-          description: "Análise e preservação das entidades",
+          description: "Analysis and preservation of entities",
+          // description: "Análise e preservação das entidades",
           stage: 2,
           execution: { endpoint: "/api/workflow/task-2", inputFrom: ["task-1"] },
           screen: { type: "result-review" }
@@ -51,7 +57,8 @@ export const DEFAULT_WORKFLOW = {
         {
           id: "task-3",
           name: "Transformation Rule Generation",
-          description: "Geração das regras a partir do resultado anterior",
+          description: "Generating rules from the previous result",
+          // description: "Geração das regras a partir do resultado anterior",
           stage: 3,
           execution: { endpoint: "/api/workflow/task-3", inputFrom: ["task-2"] },
           screen: { type: "result-review" }
