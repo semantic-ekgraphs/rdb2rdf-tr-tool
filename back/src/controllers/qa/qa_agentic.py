@@ -46,7 +46,7 @@ team_answer_questions_about_people_using_ks = Crew(
 ### ==========================================
 ### Q&A TRANSFORMATION RULES PARTTERNS TEAM
 ### ==========================================
-from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+# from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 
 tr_patterns_response_agent = Agent( 
    role="Senior analyst specializing in transformation rule patterns for RDB2RDF views.", 
@@ -82,5 +82,5 @@ team_answer_questions_about_people_using_ks = Crew(
    agents=[tr_patterns_response_agent],
    tasks=[task_answer_tr_patterns_question],
    process='sequential',
-   knowledge_sources=[knowledge_source_transformation_rule_patterns_v2]
+   # knowledge_sources=[knowledge_source_transformation_rule_patterns_v2]
 )

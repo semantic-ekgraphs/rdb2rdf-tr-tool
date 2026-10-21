@@ -5,6 +5,15 @@ from src.utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
 from src.constants import TEXTS
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+# from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
+# from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+# from knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
+# from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
+# from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_2
+# from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
+from knowledge.sources_of_knowledge import knowledge_stage_2
+from knowledge.sources_of_knowledge import instruction_consult_knowledge_source
+
 # Estou seguindo o documento do artigo: https://docs.google.com/document/d/1FU7M8qcHQhQvPcYbidvnTS28UfEBj5H_lqayQ_pAc-s/edit?tab=t.0
 
 
@@ -25,14 +34,16 @@ trigger_generation_agent = Agent(
       "Delta+ rel, and Delta+). Then, it must generate statement-level triggers using "
       "PostgreSQL transition tables to populate the asynchronous maintenance queue "
       "without hallucinating attributes, predicates, or schema joins, adhering strictly "
-      "to feedback from static verification."
+      "to feedback from static verification." 
+      
+      f"{instruction_consult_knowledge_source(('rdb2rdf views, algorithm 2, algorithm 1, and infrastructure of the maintanance queue'))}"
    ),
    backstory=(
       "You are an elite database engineer and formal methods expert specializing in "
       "relational-to-RDF incremental maintenance architectures. You approach trigger "
       "generation not through ad-hoc coding, but as a rigorous, two-stage compiler-like "
       "process: Planning and Synthesis. In the planning phase, you analyze the relational "
-      "schema alongside Stage 1 Transformation Rules to map out exact tuple lifecycle "
+      "schema alongside Transformation Rules to map out exact tuple lifecycle "
       "dependencies and isolate rule relevance (Relev(R)). During synthesis, you translate "
       "these declarative execution plans into highly efficient PostgreSQL AFTER triggers "
       "that execute at the statement level, utilizing OLD TABLE and NEW TABLE transition "
@@ -40,6 +51,7 @@ trigger_generation_agent = Agent(
       "all URI construction functions, named graphs, relational joins, and changeset "
       "deltas (A-, A+, S2, Delta+) match the formal specification with mathematical precision."
    ),
+   knowledge_sources=[knowledge_stage_2],
    verbose=True,
    memory=False,
    llm=gpt_6_luna_openai
@@ -70,6 +82,7 @@ ivm_critic_agent = Agent(
       "detected, you construct granular, actionable feedback to guide the synthesis agent in regenerating "
       "only the affected components."
    ),
+   knowledge_sources=[knowledge_stage_2],
    verbose=True,
    memory=False,
    llm=gpt_6_luna_openai
@@ -115,7 +128,7 @@ task_trigger_planning = Task(
       "<Relational Schema>{rdb_schema}</Relational Schema>"
    ),
    expected_output=(
-      "A structured report in Markdown format (.md) containing the declarative trigger execution plan for each analyzed relation R. "
+      "A structured report in Markdown format (.md), with the title 'Trigger Planning', containing the declarative trigger execution plan for each analyzed relation R. "
       "---"
       "*(Repeat for all relations R present in the transformation rules, following the columns:"
       f"{get_prompt_of_columns(TriggerPlanRow)})*"
@@ -135,7 +148,7 @@ trigger_synthesis_task = Task(
       "Based on the provided trigger execution plan and Transformation Rules, "
       "generates the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions for updates on a relation $R$, " 
       "implementing the incremental maintenance Algorithm 2: Function Compute_Changeset_R for the Asynchronous Architecture.\n\n"
-      "The  function Compute_Changeset_$R$ is responsible for computing RDF incremental maintenance information for updates on a relation $R$."
+      "The function Compute_Changeset_$R$ is responsible for computing RDF incremental maintenance information for updates on a relation $R$."
       "Algorithm 1 MUST be used only as the formal basis for the definitions of relevance, affected pivot tuples, S1, S2, and the per-rule insertion and deletion contributions."
       "The trigger MUST NOT implement the operations assigned by Algorithm 2 to the asynchronous worker."
       "Input Context:\n"
@@ -149,7 +162,8 @@ trigger_synthesis_task = Task(
       "4. Compute the post-update contributions ($S2[\Psi](u)$) for each relevant rule $\Psi$.\n"
       "5. Compute the final insertion ($\Delta^+(u)$) and deletion changesets.\n"
       "6. Construct clean, production-ready SQL statements that populate the asynchronous maintenance queue according 'Infrastructure for the Maintenance Queue'\n"
-      "7. The rule contributions of each rule should be stored in JSON format, and should follow the templates presented in  'Infrastructure for the Maintenance Queue'" \
+      "7. The rule contributions of each rule should be stored in JSON format, and should follow the schema of rdf_maintenance_queue, schema of rdf_rule_contribution and JSON schema templates presented in 'Infrastructure for the Maintenance Queue'."
+      f"{instruction_consult_knowledge_source(('rdb2rdf views, algorithm 2, algorithm 1, and infrastructure of the maintanance queue'))}"
    ),
    expected_output="""
 A structured PostgreSQL Trigger Implementation Report in Markdown format (.md).
@@ -255,12 +269,7 @@ For each defect found, provide clear guidance for selective regeneration:
 ### TEAM
 ### ==========================================
 from crewai import Crew
-from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
-from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
-from knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
-from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
-from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_2
-from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
+
 
 after_trigger_gen_team_1 = Crew(
    agents=[
@@ -270,11 +279,11 @@ after_trigger_gen_team_1 = Crew(
       task_trigger_planning,
    ],
    process='sequential',
-   knowledge_sources=[
-         knowledge_of_rdb2rdf_views,
-         knowledge_source_of_algorithm_1,
-         knowledge_source_of_maintanance_queue_infrastructure,
-      ], 
+   # knowledge_sources=[
+   #       knowledge_of_rdb2rdf_views,
+   #       knowledge_source_of_algorithm_1,
+   #       knowledge_source_of_maintanance_queue_infrastructure,
+   #    ], 
 )
 
 
@@ -285,13 +294,7 @@ after_trigger_gen_team_2 = Crew(
    tasks=[
       trigger_synthesis_task,
    ],
-   process='sequential',
-   knowledge_sources=[
-      knowledge_of_rdb2rdf_views,
-      knowledge_source_of_algorithm_2,
-      knowledge_source_of_algorithm_1,
-      knowledge_source_of_maintanance_queue_infrastructure,
-   ],
+   process='sequential'
 )
 
 
@@ -303,9 +306,9 @@ after_trigger_gen_team_3 = Crew(
       trigger_static_verification_task,
    ],
    process='sequential',
-   knowledge_sources=[
-      knowledge_of_rdb2rdf_views,
-      knowledge_source_of_maintanance_queue_infrastructure,
-      knowledge_source_of_algorithm_1
-   ],
+   # knowledge_sources=[
+   #    knowledge_of_rdb2rdf_views,
+   #    knowledge_source_of_maintanance_queue_infrastructure,
+   #    knowledge_source_of_algorithm_1
+   # ],
 )

@@ -128,7 +128,7 @@ export default function App() {
       setStatus("success");
       setStage(1);
       setViewStage(1);
-      setNotice("Task 1 completed. Review the output before continuing.");
+      setNotice("Review the output before continuing.");
     } catch (e) {
       setStatus("error");
       setError(e.message || "It was not possible to execute Task 1.");

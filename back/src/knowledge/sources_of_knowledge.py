@@ -2,39 +2,31 @@ from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledge
 from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource 
 
 
-knowledge_of_formal_entity_preserving_specification = PDFKnowledgeSource(
-   file_paths=["formal-especification-of-entity-preserving.pdf"]
-)
+# https://www.youtube.com/watch?v=05BZmeTbsrg
 
-knowledge_source_transformation_rule_patterns = TextFileKnowledgeSource(
-   file_paths=["tr_patterns_v2.txt"]
-)
-
-
-
-knowledge_source_transformation_rule_patterns_v2 = PDFKnowledgeSource(
-   file_paths=["transformation-rules-patterns-rdb2rdf-views.pdf"]
-)
+def instruction_consult_knowledge_source(sources:str):
+   return (
+      f"You have direct access to the of {sources} through its integrated knowledge base (knowledge sources). "
+      "Always consult this base before providing any response."
+      "You should prioritize information from your integrated knowledge, or, in other words, "
+      "your primary source of truth is the knowledge you have available."
+   )
 
 
-transformation_rules_formalism = TextFileKnowledgeSource(
-   file_paths=["tr_formalism.txt"]
-)
-
-
-knowledge_source_of_maintanance_queue_infrastructure = PDFKnowledgeSource(
-   file_paths=["Maintenance-Queue-Infrastructure.pdf"]
-)
-
-knowledge_source_of_algorithm_1 = PDFKnowledgeSource(
-   file_paths=["algorithm-1-compute-delta-r.pdf"]
-)
-
-knowledge_source_of_algorithm_2 = PDFKnowledgeSource(
-   file_paths=["algorithm-2-compute-changeset-r.pdf"]
+knowledge_stage_1 = PDFKnowledgeSource(
+   file_paths=[
+      "rdb2rdf-views.pdf",
+      "formal-especification-of-entity-preserving.pdf",
+      "transformation-rules-patterns-rdb2rdf-views.pdf"
+   ]
 )
 
 
-knowledge_of_rdb2rdf_views = PDFKnowledgeSource(
-   file_paths=["rdb2rdf-views.pdf"]
+knowledge_stage_2 = PDFKnowledgeSource(
+   file_paths=[
+      "rdb2rdf-views.pdf",
+      "algorithm-2-compute-changeset-r.pdf",
+      "algorithm-1-compute-delta-r.pdf",
+      "Maintenance-Queue-Infrastructure.pdf"
+   ]
 )

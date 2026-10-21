@@ -12,11 +12,15 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ### ==========================================
 ### AGENTS | STAGE 1
 ### ==========================================
+from knowledge.sources_of_knowledge import instruction_consult_knowledge_source
+from knowledge.sources_of_knowledge import knowledge_stage_1
+
 transformation_rule_generation_agent = Agent(
-   role="Principal Knowledge Engineer and Formal Semantic Web Architect",
+   role="Principal Knowledge Engineer and Formal Semantic Web Architect and Senior analyst specializing in transformation rule patterns for RDB2RDF views.", 
    goal=(
       "The objective of this stage is to transform an R2RML specification into a set of "
       "formally defined Transformation Rules (TRs) that conform to the conceptual framework."
+      f"{instruction_consult_knowledge_source(('rdb2rdf views, formal especification of entity preserving, and transformation rules patterns'))}"
    ),
    backstory=(
       "You are a world-class authority on semantic data integration frameworks and the creator of "
@@ -33,6 +37,7 @@ transformation_rule_generation_agent = Agent(
       "of the relational views, identifying precise pivot relations, determining object-preservation "
       "compliance, and isolating structural relational paths as the final term of rule bodies."
    ),
+   knowledge_sources=[knowledge_stage_1],
    verbose=True,
    memory=False,
    llm=gpt_6_luna_openai,
@@ -47,6 +52,7 @@ transformation_rule_validation_agent = Agent(
       "Rigorously verify pivot relations, foreign-key relational paths, URI construction functions, "
       "RDF predicates, and SQL selection conditions, ensuring the compiled TR set is fully "
       "accurate, semantically equivalent, and ready for deployment."
+      f"{instruction_consult_knowledge_source(('rdb2rdf views, formal especification of entity preserving, and transformation rules patterns'))}"
    ),
    backstory=(
       "You are an expert Semantic Web Quality Assurance Specialist and Formal Logic Auditor "
@@ -58,6 +64,7 @@ transformation_rule_validation_agent = Agent(
       "conditions are omitted, and all URI templates and RDF predicates maintain absolute semantic "
       "fidelity to the original specification."
    ),
+   knowledge_sources=[knowledge_stage_1],
    verbose=True,
    memory=False
 )
@@ -67,7 +74,6 @@ transformation_rule_validation_agent = Agent(
 ### ==========================================
 ### TASK 1 | STAGE 1
 ### ==========================================
-# No documento não está incluso o "selection condition"
 from .model import TriplesMapParsing
 task_metadata_extraction_and_normalization = Task(
    name="Metadata Extraction and Normalization",
@@ -81,6 +87,8 @@ task_metadata_extraction_and_normalization = Task(
    "- Do not parse commented-out R2RML mappings. Comments in R2RML start with #;\n"
    "- Never invent CONSTRAINT names;\n"
    "- Remove any invented CONSTRAINT name.\n\n"
+   "- Generate the full URIs for predicates, always including the respective namespace. "
+   "  In other words, do not use a prefix —as in 'ex:Person'— but rather use <https://schema.org/Person>."
    "Inputs: \n"
    "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
    "<Relational Schema>{rdb_schema}</Relational Schema>\n"
@@ -104,8 +112,6 @@ task_metadata_extraction_and_normalization = Task(
 ### TASK 2 | STAGE 1
 ### ==========================================
 from .model import EntityPreservationRow
-# O segundo mapeamento gerou TR. Talvez seja necessário adicionar 
-# a instrução de não gerar TRs.
 task_entity_preservation_analysis = Task(
    description=(
 "Verifies whether the R2RML mappings, in <Extracted Metadada> input, satisfy the assumptions required by "
@@ -127,13 +133,6 @@ f"{get_prompt_of_a_pydantic_model(EntityPreservationRow)}\n\n"
 )
 
 
-# "- relation;\n"
-# "- pivot relations;\n"
-# "- checks whether entity identities are preserved;\n"
-# "- generates and validates URI construction functions;\n"
-# "- analyzes relational paths; and\n"
-# "- detects constructs that violate the entity-preserving property;\n"
-# "- correction recommended.\n\n"
 
 
 
@@ -147,20 +146,20 @@ f"{get_prompt_of_a_pydantic_model(EntityPreservationRow)}\n\n"
 from .model import TransformationRuleRow
 task_transformation_rule_generation = Task(
    description=(
-   "Using the <validated metadata> and <entity_preservation_analysis>, compile each R2RML mapping "
-   "into a formal Transformation Rule (TR) specification.\n\n"
-   "Inputs: "
-   "<validated metadata>{validated_metadata}</validated metadata>\n\n"
-   "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
-   "<entity_preservation_analysis>{entity_preservation_analysis}<entity_preservation_analysis>\n\n"
-   "For each mapping, you MUST:\n"
-   f"{get_prompt_of_a_pydantic_model(TransformationRuleRow)}\n\n"
+      "Using the <validated metadata> and <entity_preservation_analysis>, compile each R2RML mapping "
+      "into a formal Transformation Rule (TR) specification.\n\n"
+      "Inputs: "
+      "<validated metadata>{validated_metadata}</validated metadata>\n\n"
+      "<R2RML mappings>{r2rml_mapping}</R2RML mappings>\n\n"
+      "<entity_preservation_analysis>{entity_preservation_analysis}<entity_preservation_analysis>\n\n"
+      "For each mapping, you MUST:\n"
+      f"{get_prompt_of_a_pydantic_model(TransformationRuleRow)}\n\n"
    ),
    expected_output=(
-"A structured report in Markdown format (.md) containing the compiled Transformation Rules (TRs). "
-"covering the following columns:"
-f"{get_prompt_of_columns(TransformationRuleRow)} "
-"*(Repeat for all generated rules)* "
+      "A structured report in Markdown format (.md) containing the compiled Transformation Rules (TRs) with the title 'Transformation Rules'. "
+      "covering the following columns:"
+      f"{get_prompt_of_columns(TransformationRuleRow)} "
+      "*(Repeat for all generated rules)* "
    ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/transformation_rules_{date_now}.md",
    agent=transformation_rule_generation_agent
@@ -209,6 +208,7 @@ f"{get_prompt_of_columns(TransformationRuleRow)} "
 #    agent=transformation_rule_generation_agent
 # )
 
+from .model import TransformationRuleValidation
 task_transformation_rule_validation = Task(
    description=(
    "Independently audit and validate the generated Transformation Rules produced in the previous task "
@@ -224,42 +224,39 @@ task_transformation_rule_validation = Task(
    "4. Precise alignment of RDF predicates and SQL selection conditions with the original R2RML definitions.\n"
    "5. Complete preservation of original mapping semantics without loss or unauthorized modifications."
    ),
-   expected_output="""
-A structured Validation Report in Markdown format (.md) verifying the compiled Transformation Rules.
-
-The report MUST strictly follow this Markdown structure:
-
-# Transformation Rules Validation Report
-
-## 1. Validation Summary
-- **Overall Status**: `PASSED` (Fully Validated) or `FAILED` (Inconsistencies Found).
-- **Total Rules Evaluated**: Total count of audited TRs.
-- **Compliance Rate**: Percentage of rules fully matching semantic specifications.
-
-## 2. Audit Checklist & Consistency Analysis
-For each compiled Transformation Rule:
-- **Rule Identifier**: The audited rule name (e.g., `\psi_artist_01`).
-- **Pivot Relation Audit**: [PASS/FAIL] - Verification against source metadata.
-- **Relational Path Audit**: [PASS/FAIL] - Verification of foreign key join paths.
-- **URI Construction Functions**: [PASS/FAIL] - Verification of URI templates and namespace predicates.
-- **Predicates & Selection Conditions**: [PASS/FAIL] - Verification that SQL selection logic and RDF predicates match the original mapping.
-- **Semantic Consistency Status**: [PASS/FAIL] - Final verification against original R2RML semantics.
-
-## 3. Discrepancies & Feedback
-*(Include details for any failed rule)*
-- **Rule ID**: [ID]
-- **Detected Issue**: Description of the semantic deviation from original R2RML mappings.
-- **Required Correction**: Recommended adjustment to achieve full semantic equivalence.
-
-## 4. Final Validated Set of Transformation Rules
-*(Included when overall status is PASSED)*
-The finalized, fully verified set of formal Transformation Rules ready for downstream deployment.
-""",
+   expected_output=(
+      "A structured Validation Report in Markdown format (.md) verifying the compiled Transformation Rules. "
+      "The report MUST strictly follow this Markdown structure: "
+      "# Transformation Rules Validation Report "
+      "## Validation Summary"
+      "- **Overall Status**: `PASSED` (Fully Validated) or `FAILED` (Inconsistencies Found)."
+      "- **Total Rules Evaluated**: Total count of audited TRs."
+      "- **Compliance Rate**: Percentage of rules fully matching semantic specifications."
+      f"{get_prompt_of_columns(TransformationRuleValidation)} "
+      "##   Final Validated Set of Transformation Rules"
+      "*(Included when overall status is PASSED)*"
+      "The finalized, fully verified set of formal Transformation Rules ready for downstream deployment."
+   ),
    output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/validated_transformation_rules_{date_now}.md",
-   context=[task_transformation_rule_generation],  # Explicit dependency on Task 1
+   context=[task_transformation_rule_generation], 
    agent=transformation_rule_validation_agent
 )
 
+
+# ## 2. Audit Checklist & Consistency Analysis
+# For each compiled Transformation Rule:
+# - **Rule Identifier**: The audited rule name (e.g., `tr_artist_01`).
+# - **Pivot Relation Audit**: [PASS/FAIL] - Verification against source metadata.
+# - **Relational Path Audit**: [PASS/FAIL] - Verification of foreign key join paths.
+# - **URI Construction Functions**: [PASS/FAIL] - Verification of URI templates and namespace predicates.
+# - **Predicates & Selection Conditions**: [PASS/FAIL] - Verification that SQL selection logic and RDF predicates match the original mapping.
+# - **Semantic Consistency Status**: [PASS/FAIL] - Final verification against original R2RML semantics.
+
+# ## 3. Discrepancies & Feedback
+# *(Include details for any failed rule)*
+# - **Rule ID**: [ID]
+# - **Detected Issue**: Description of the semantic deviation from original R2RML mappings.
+# - **Required Correction**: Recommended adjustment to achieve full semantic equivalence.
 
 
 
@@ -274,10 +271,7 @@ The finalized, fully verified set of formal Transformation Rules ready for downs
 ### ==========================================
 ### TRANSFORMATION RULES TEAM
 ### ==========================================
-from crewai import Crew
-from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
-from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
-from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
+
 transformation_rules_team_task_1 = Crew(
    agents=[
       transformation_rule_generation_agent
@@ -285,10 +279,7 @@ transformation_rules_team_task_1 = Crew(
    tasks=[
       task_metadata_extraction_and_normalization
    ],
-   process='sequential',
-   knowledge_sources=[ # Enable knowledge by adding the sources here
-      knowledge_of_rdb2rdf_views
-   ] 
+   process='sequential'
 )
 
 
@@ -299,10 +290,7 @@ transformation_rules_team_task_2 = Crew(
    tasks=[
       task_entity_preservation_analysis
    ],
-   process='sequential',
-   knowledge_sources=[
-      knowledge_of_rdb2rdf_views
-   ]
+   process='sequential'
 )
 
 
@@ -314,8 +302,5 @@ transformation_rules_team_task_3 = Crew(
       task_transformation_rule_generation,
       task_transformation_rule_validation
    ],
-   process='sequential',
-   knowledge_sources=[
-      knowledge_of_rdb2rdf_views
-   ]
+   process='sequential'
 )

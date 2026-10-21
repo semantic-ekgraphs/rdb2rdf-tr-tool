@@ -9,7 +9,7 @@ export default function Task1Page({ result, busy, reviewBusy, notice, error, onF
           <h1>Metadata Extraction Output</h1>
           {/* <p>Inspect the output. You can request a review or proceed with the current result.</p> */}
         </div>
-        <span className={`status-pill ${result ? "status-success" : "status-pending"}`}>{result ? "Resultado disponível" : "Aguardando execução"}</span>
+        {/* <span className={`status-pill ${result ? "status-success" : "status-pending"}`}>{result ? "Resultado disponível" : "Aguardando execução"}</span> */}
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

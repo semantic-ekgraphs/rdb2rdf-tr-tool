@@ -64,15 +64,15 @@ export default function UploadPage({ busy, onRunTask1 }) {
           />
         </div>
 
-        <div className="info-strip">
+        {/* <div className="info-strip">
           <span className="info-mark">i</span>
           <span>Following Task 1, the next task will receive exclusively the confirmed output from the first task.</span>
-        </div>
+        </div> */}
 
         <div className="form-footer">
           {/* <span className="muted">Accepted formats depend on the processing configured in the backend.</span> */}
           <button className="button button-primary" type="submit" disabled={busy || !file1 || !file2}>
-            {busy ? <><span className="spinner" /> Executing Task 1...</> : <>Send files<span>→</span></>}
+            {busy ? <><span className="spinner" /> Extracting metadata...</> : <>Send files<span>→</span></>}
           </button>
         </div>
       </form>
