@@ -5,6 +5,6 @@ person_knowledge_source_str = StringKnowledgeSource(
    content="Renan Freitas é casado com Mara Kelly. Eles tem a Maria."
 )
 
-person_knowledge_source_txt = TextFileKnowledgeSource(
-   file_paths=["renato-data.txt"]
-)
+# person_knowledge_source_txt = TextFileKnowledgeSource(
+#    file_paths=["renato-data.txt"]
+# )

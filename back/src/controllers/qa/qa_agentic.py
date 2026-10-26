@@ -1,6 +1,5 @@
 from crewai import Agent, Task, Crew
-from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
-from .qa_knowledge import person_knowledge_source_txt, person_knowledge_source_str
+from .qa_knowledge import person_knowledge_source_str
 from llms import gpt_4o_mini_openai
 
 people_relationship_response_agent = Agent( 
@@ -37,7 +36,7 @@ team_answer_questions_about_people_using_ks = Crew(
    agents=[people_relationship_response_agent],
    tasks=[task_answer_people_relationship_question],
    process='sequential',
-   knowledge_sources=[person_knowledge_source_txt, person_knowledge_source_str]
+   knowledge_sources=[person_knowledge_source_str]
 )
 
 

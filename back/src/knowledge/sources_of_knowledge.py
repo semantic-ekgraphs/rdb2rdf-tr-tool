@@ -25,6 +25,7 @@ knowledge_stage_1 = PDFKnowledgeSource(
 knowledge_stage_2 = PDFKnowledgeSource(
    file_paths=[
       "rdb2rdf-views.pdf",
+      "transformation-rules-patterns-rdb2rdf-views.pdf",
       "algorithm-2-compute-changeset-r.pdf",
       "algorithm-1-compute-delta-r.pdf",
       "Maintenance-Queue-Infrastructure.pdf"

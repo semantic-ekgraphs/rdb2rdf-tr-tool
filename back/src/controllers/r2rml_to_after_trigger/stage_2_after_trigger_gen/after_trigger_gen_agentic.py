@@ -118,10 +118,10 @@ ivm_critic_agent = Agent(
 from .model import TriggerPlanRow
 task_trigger_planning = Task(
    description=(
-      "Analyze the set of transformation rules "
+      "Analyze the set of Transformation Rules "
       "to determine the incremental maintenance strategy required for each database pivot relation $R$ present in the Transformation Rules "
       "without generating SQL code at this stage.\n\n"
-      "For each pivot relation $R$ in <Transformation Rules>, you must:\n"
+      "For each pivot relation $R$ in Final Validated Set of Transformation Rules on <Transformation Rules>, you must do:\n"
        f"{get_prompt_of_a_pydantic_model(TriggerPlanRow)}\n\n"
       "Inputs:"
       "<Transformation Rules>{transformation_rules}</Transformation Rules>\n\n"
@@ -146,14 +146,54 @@ from .model import StaticVerificationRow
 trigger_synthesis_task = Task(
    description=(
       "Based on the provided trigger execution plan and Transformation Rules, "
-      "generates the corresponding PostgreSQL AFTER triggers and PL/pgSQL functions for updates on a relation $R$, " 
-      "implementing the incremental maintenance Algorithm 2: Function Compute_Changeset_R for the Asynchronous Architecture.\n\n"
+      "generates the corresponding PostgreSQL statement-level AFTER triggers and PL/pgSQL functions for updates on a relation $R$, " 
+      "implementing the incremental maintenance Algorithm 2: Function Compute_Changeset_$R$ for the Asynchronous Architecture.\n\n"
+      "Input Context:\n"
+         "<trigger execution plan>{trigger_execution_plan}\n</trigger execution plan>\n"
+         "<Transformation Rules>{transformation_rules}\n</Transformation Rules>\n\n"
       "The function Compute_Changeset_$R$ is responsible for computing RDF incremental maintenance information for updates on a relation $R$."
+      "The generated trigger function MUST implement Algorithm 2.\n"
       "Algorithm 1 MUST be used only as the formal basis for the definitions of relevance, affected pivot tuples, S1, S2, and the per-rule insertion and deletion contributions."
       "The trigger MUST NOT implement the operations assigned by Algorithm 2 to the asynchronous worker."
-      "Input Context:\n"
-      "<trigger execution plan>{trigger_execution_plan}\n</trigger execution plan>\n\n"
-      "<Transformation Rules>{transformation_rules}\n</Transformation Rules>"
+      "The After Trigger has the form:\n"
+      "CREATE TRIGGER ...\n"
+      "AFTER UPDATE ON ...\n"
+      "REFERENCING\n"
+      "  OLD TABLE AS deleted_$R$\n"
+      "  NEW TABLE AS inserted_$R$\n"
+      "FOR EACH STATEMENT\n"
+      "EXECUTE FUNCTION ...;\n\n"
+
+      "The incremental maintenance of a materialized RDB2RDF view will be executed in a PostgreSQL trigger-based architecture using transition tables and an asynchronous RDF maintenance queue as described in  [Infrastructure for the Maintenance Queue]. \n"
+      "The asynchronous architecture is composed of:\n"
+      "1. PostgreSQL statement-level AFTER triggers;\n"
+      "2. A maintenance queue (rdf_maintenance_queue);\n"
+      "3. An external worker that processes events and interacts with GraphDB.\n"
+      "\n"
+      "The AFTER trigger operates exclusively on PostgreSQL data.\n"
+      "For each relevant rule Ψ, it computes and publishes:\n"
+      "- A−[Ψ](u);\n"
+      "- A+[Ψ](u);\n"
+      "- S2[Ψ](u);\n"
+      "- Δ+[Ψ](u).\n"
+      "\n"
+      "The external asynchronous worker:\n"
+      "- retrieves S1[Ψ](u) and Δ−pivot[Ψ](u) from W0 in GraphDB;\n"
+      "- computes the final deletion contribution Δ−[Ψ](u);\n"
+      "- applies Δ−[Ψ](u) and Δ+[Ψ](u) to GraphDB.\n"
+      "\n"
+      "No SPARQL or GraphDB operation is part of the generated trigger.\n"
+
+      "INPUT ASSUMPTIONS\n"
+      "Assume:\n"
+      " - u = (D, I) is an update over relation R\n"
+      " - D = deleted_R\n"
+      " - I = inserted_R\n"
+      "where:\n"
+      " - deleted_$R$ is the transition table containing deleted/pre-update tuples\n"
+      " - inserted_$R$ is the transition table containing inserted/post-update tuples\n"
+
+      
       "Your synthesis of AFTER triggers PL/pgSQL must implement the following architectural requirements:\n"
       "1. Utilize statement-level transition tables (`REFERENCING OLD TABLE AS OLD_$R$ NEW TABLE AS NEW_$R$`) "
       "to capture snapshots of update events over relation $R$ ($\Delta^-$ and $\Delta^+$).\n"
@@ -162,7 +202,8 @@ trigger_synthesis_task = Task(
       "4. Compute the post-update contributions ($S2[\Psi](u)$) for each relevant rule $\Psi$.\n"
       "5. Compute the final insertion ($\Delta^+(u)$) and deletion changesets.\n"
       "6. Construct clean, production-ready SQL statements that populate the asynchronous maintenance queue according 'Infrastructure for the Maintenance Queue'\n"
-      "7. The rule contributions of each rule should be stored in JSON format, and should follow the schema of rdf_maintenance_queue, schema of rdf_rule_contribution and JSON schema templates presented in 'Infrastructure for the Maintenance Queue'."
+      "7. The rule contributions of each rule should be stored follow the schema of rdf_maintenance_queue, all complete schema of rdf_rule_contribution table, using the JSON schemas to CTR, DTR and OTR defined in 'Infrastructure for the Maintenance Queue' knowledge sources.\n" \
+      
       f"{instruction_consult_knowledge_source(('rdb2rdf views, algorithm 2, algorithm 1, and infrastructure of the maintanance queue'))}"
    ),
    expected_output="""
@@ -178,17 +219,6 @@ The report must follow this exact structure:
 - **Target Relation(s)**: List of database relation(s) processed (e.g., Relation R).
 - **Architecture Compliance**: Confirmation of statement-level transition table usage (`REFERENCING OLD TABLE / NEW TABLE`) and asynchronous maintenance queue population according 'Infrastructure for the Maintenance Queue'.
 
-## 2. Trigger Execution & Component Computation
-Detailed breakdown of the implemented logic for the generated SQL code:
-- **Snapshot Capture**: Description of how transition tables ($\Delta^-$ and $\Delta^+$) capture update event snapshots.
-- **Affected Deletion Tuples ($A^-[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for deletion.
-- **Affected Insertion Tuples ($A^+[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for insertion.
-- **Post-Update Contributions ($S2[\Psi](u)$)**: Implementation logic computing post-update RDF states for rule $\Psi$.
-- **Changesets Computation ($\Delta^+(u)$ and $\Delta^-(u)$)**: Final aggregation logic for insertion and deletion changesets.
-
-## 3. Asynchronous Maintenance Queue Integration
-- Explanation of how computed components are serialized and loaded into the maintenance queue infrastructure.
-
 ## 4. Generated PostgreSQL AFTER Trigger Code
 - Complete, syntactically correct SQL/PL-pgSQL code blocks for the statement-level AFTER triggers and associated functions.
 """,
@@ -197,6 +227,19 @@ Detailed breakdown of the implemented logic for the generated SQL code:
 )
 
 
+# ## 2. Trigger Execution & Component Computation
+# Detailed breakdown of the implemented logic for the generated SQL code:
+# - **Snapshot Capture**: Description of how transition tables ($\Delta^-$ and $\Delta^+$) capture update event snapshots.
+# - **Affected Deletion Tuples ($A^-[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for deletion.
+# - **Affected Insertion Tuples ($A^+[\Psi](u)$)**: Implementation logic isolating affected pivot tuples for insertion.
+# - **Post-Update Contributions ($S2[\Psi](u)$)**: Implementation logic computing post-update RDF states for rule $\Psi$.
+# - **Changesets Computation ($\Delta^+(u)$ and $\Delta^-(u)$)**: Final aggregation logic for insertion and deletion changesets.
+
+
+# ##3. Asynchronous Maintenance Queue Integration
+# - Explanation of how computed components are serialized and loaded into the maintenance queue infrastructure.
+
+# "8. The named graph is a URI resulting concatening 'http://example.com/resource/tr/' and respective <transformation_rule_id>"
 
 ### ==========================================
 ### TASK 3 | STAGE 2
@@ -278,12 +321,7 @@ after_trigger_gen_team_1 = Crew(
    tasks=[
       task_trigger_planning,
    ],
-   process='sequential',
-   # knowledge_sources=[
-   #       knowledge_of_rdb2rdf_views,
-   #       knowledge_source_of_algorithm_1,
-   #       knowledge_source_of_maintanance_queue_infrastructure,
-   #    ], 
+   process='sequential'
 )
 
 
@@ -305,10 +343,5 @@ after_trigger_gen_team_3 = Crew(
    tasks=[
       trigger_static_verification_task,
    ],
-   process='sequential',
-   # knowledge_sources=[
-   #    knowledge_of_rdb2rdf_views,
-   #    knowledge_source_of_maintanance_queue_infrastructure,
-   #    knowledge_source_of_algorithm_1
-   # ],
+   process='sequential'
 )

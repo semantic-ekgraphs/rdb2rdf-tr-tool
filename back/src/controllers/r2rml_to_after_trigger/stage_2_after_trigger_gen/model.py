@@ -25,6 +25,10 @@ class TriggerPlanRow(BaseModel):
       description="Compute the set $Relev(R)$ of all relevant Transformation Rules for relation $R$",
       examples=["tr-company-1, tr-company-2", "tr-employee-5"]
    )
+   rules: str = Field(
+      default=None, 
+      description="The transformation rule formula"
+   )
    rule_classification: str = Field(
       default=None, 
       description="Classify each rule in the set as 'pivot-relevant' or 'relation-relevant'",
@@ -52,17 +56,17 @@ class TriggerPlanRow(BaseModel):
    )
    compute_delta_pivot: bool = Field(
       default=None, 
-      description="Determines whether the maintenance components —post-update deletions changesets contributions (\Delta^+_{\text{pivot}})— need to be computed",
+      description="Determines whether the maintenance components —post-update deletions changesets contributions (\Delta^+_\{\text\{pivot\}\})— need to be computed",
       examples=["Yes", "No"]
    )
    compute_delta_rel: bool = Field(
       default=None, 
-      description="Determines whether the maintenance components —post-update insertions changesets contributions (\Delta^+_{\text{rel}})— need to be computed",
+      description="Determines whether the maintenance components —post-update insertions changesets contributions (\Delta^+_\{\text\{rel\}\})— need to be computed",
       examples=["Yes", "No"]
    )
    compute_delta_plus: bool = Field(
       default=None,
-      description="Determines whether the maintenance components —Final net insertion changeset for the relevant rules: contributions present after the update and absent before it, after set-semantic deduplication. It includes eligible insertions from both (\Delta^+{\text{pivot}}) and (\Delta^+{\text{rel}}).",
+      description="Determines whether the maintenance components —Final net insertion changeset for the relevant rules: contributions present after the update and absent before it, after set-semantic deduplication. It includes eligible insertions from both (\Delta^+\{\text\{pivot\}\}) and (\Delta^+\{\text\{rel\}\}).",
       examples=["Yes", "No"]
    )
    compute_delta_minus: bool = Field(

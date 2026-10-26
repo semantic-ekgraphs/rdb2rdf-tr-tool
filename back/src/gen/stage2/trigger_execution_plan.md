@@ -1,34 +1,24 @@
-## Declarative incremental-maintenance plan
+# Trigger Planning
 
-**Interpretation of the flags:** `A⁻` and `A⁺` identify affected pivot tuples before and after the update. `S2` is marked **Yes** when maintenance needs a post-update relational-path join; for rules without such a join, contributions can be derived directly from the affected tuples. `Delta+` and `Delta−` indicate whether positive and negative RDF contributions must be maintained. A flag indicates a component may be required; the resulting delta may be empty for a particular update.
+This plan covers the eight rules in the **Final Validated Set**. “Yes” indicates that the component is required by the maintenance plan for that rule and relation; it does not mean the component will necessarily contain tuples for every update event. The relational path of `tr-products-5` contains one `manufacturers` occurrence.
 
-### Relation: `manufacturers`
+## Relation: `manufacturers`
 
-`Relev(manufacturers)` includes the three rules whose pivot is `manufacturers`, and `tr-products-5`, whose relational path references `manufacturers`.
+| relation | relevant_rules | rules | rule_classification | multiple_path_occurrences | compute_a_minus | compute_a_plus | compute_s2 | compute_delta_pivot | compute_delta_rel | compute_delta_plus | compute_delta_minus |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| manufacturers | tr-manufacturers-1 | `<https://schema.org/Organization>(s) ← manufacturers(r), URI_manufacturers(r,s)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| manufacturers | tr-manufacturers-2 | `<https://schema.org/name>(s,v) ← manufacturers(r), URI_manufacturers(r,s), nonNull(r.name), RDFLiteral(r.name,"name","manufacturers",v)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| manufacturers | tr-manufacturers-3 | `<https://schema.org/url>(s,o) ← manufacturers(r), URI_manufacturers(r,s), nonNull(r.homepage), RDFIRI(r.homepage,o)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| manufacturers | tr-products-5 | `<https://schema.org/brand>(s,o) ← products(d), URI_products(d,s), manufacturers(g), URI_manufacturers(g,o), FK_products_brand_id_manufacturers_id(d,g)` | relation-relevant | No | Yes | Yes | Yes | No | Yes | Yes | Yes |
 
-| relation | relevant_rules | rule_classification | multiple_path_occurrences | compute_a_minus | compute_a_plus | compute_s2 | compute_delta_pivot | compute_delta_rel | compute_delta_plus | compute_delta_minus |
-|---|---|---|---|---|---|---|---|---|---|---|
-| manufacturers | tr-manufacturers-1 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| manufacturers | tr-manufacturers-2 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| manufacturers | tr-manufacturers-3 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| manufacturers | tr-products-5 | relation-relevant | No | Yes | Yes | Yes | No | Yes | Yes | Yes |
+## Relation: `products`
 
-**Plan notes:**
-- `tr-manufacturers-1`, `tr-manufacturers-2`, and `tr-manufacturers-3` are maintained from affected manufacturer pivot tuples. The `schema:url` rule is included as supplied, despite being identified as a nonconforming OTR-shaped mapping.
-- `tr-products-5` is affected through the `products(brand_id) → manufacturers(id)` path. Its maintenance requires identifying affected product pivots and evaluating the post-update path join. The path contains `manufacturers` once, so there are no multiple occurrences of this relation in the path.
+| relation | relevant_rules | rules | rule_classification | multiple_path_occurrences | compute_a_minus | compute_a_plus | compute_s2 | compute_delta_pivot | compute_delta_rel | compute_delta_plus | compute_delta_minus |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| products | tr-products-1 | `<https://schema.org/Product>(s) ← products(r), URI_products(r,s)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| products | tr-products-2 | `<https://schema.org/name>(s,v) ← products(r), URI_products(r,s), nonNull(r.title), RDFLiteral(r.title,"title","products",v)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| products | tr-products-3 | `<https://schema.org/sku>(s,v) ← products(r), URI_products(r,s), nonNull(r.sku), RDFLiteral(r.sku,"sku","products",v)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| products | tr-products-4 | `<https://schema.org/price>(s,v) ← products(r), URI_products(r,s), nonNull(r.price), RDFLiteral(r.price,"price","products",v)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
+| products | tr-products-5 | `<https://schema.org/brand>(s,o) ← products(d), URI_products(d,s), manufacturers(g), URI_manufacturers(g,o), FK_products_brand_id_manufacturers_id(d,g)` | pivot-relevant | No | No | No | No | Yes | No | Yes | Yes |
 
-### Relation: `products`
-
-`Relev(products)` consists of the five rules whose pivot is `products`.
-
-| relation | relevant_rules | rule_classification | multiple_path_occurrences | compute_a_minus | compute_a_plus | compute_s2 | compute_delta_pivot | compute_delta_rel | compute_delta_plus | compute_delta_minus |
-|---|---|---|---|---|---|---|---|---|---|---|
-| products | tr-products-1 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| products | tr-products-2 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| products | tr-products-3 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| products | tr-products-4 | pivot-relevant | No | Yes | Yes | No | Yes | No | Yes | Yes |
-| products | tr-products-5 | pivot-relevant | No | Yes | Yes | Yes | Yes | No | Yes | Yes |
-
-**Plan notes:**
-- The first four rules map product pivot tuples directly, so their contributions do not require a post-update relational-path join.
-- `tr-products-5` is pivot-relevant when `products` changes. Its `manufacturers` path join is needed to determine the resulting `schema:brand` contributions. The path contains `products` once, so there are no multiple occurrences of this relation in the path.
+**Planning notes:** `Relev(manufacturers)` comprises `tr-manufacturers-1`, `tr-manufacturers-2`, `tr-manufacturers-3`, and `tr-products-5`. `Relev(products)` comprises `tr-products-1` through `tr-products-5`. The manufacturer rules are pivot-relevant for manufacturer updates; `tr-products-5` is relation-relevant for manufacturer updates and pivot-relevant for product updates. No relevant rule has multiple occurrences of the updated relation in its relational path.
