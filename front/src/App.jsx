@@ -4,6 +4,8 @@ import UploadPage from "./pages/UploadPage";
 import Task1Page from "./pages/Task1Page";
 import Task2Page from "./pages/Task2Page";
 import Task3Page from "./pages/Task3Page";
+
+//import {Task1Page,Task2Page,Task3Page} from "./pages/Stage1";
 import Task1_2Page from "./pages/Task1_2Page";
 import {
   executeTask1,
@@ -257,8 +259,8 @@ export default function App() {
 
   // teste stage 2 task 1
   const approveTask3AndContinue = useCallback(() => {
-    if (!task2Result) {
-      setError("Complete Task 2 before continuing.");
+    if (!task3Result) {
+      setError("Complete Task 3 before continuing.");
       return;
     }
 
@@ -267,11 +269,11 @@ export default function App() {
     setStage(4);
     setViewStage(4);
     setNotice("Task 3 confirmed. You can start Task 1_2.");
-  }, [task2Result]);
+  }, [task3Result]);
 
   
   const runTask1_2 = useCallback(async () => {
-    if (!approvedTask2Result) {
+    if (!approvedTask3Result) {
       setError("First, confirm the result of Task 3.");
       return;
     }

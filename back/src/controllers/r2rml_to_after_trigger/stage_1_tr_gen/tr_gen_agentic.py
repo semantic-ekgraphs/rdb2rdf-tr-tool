@@ -1,6 +1,6 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_6_luna_openai
+from llms import gpt_6_luna_openai, local_GEMMA
 from models.stage1 import MetadataParsing
 from src.utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
 from src.constants import TEXTS

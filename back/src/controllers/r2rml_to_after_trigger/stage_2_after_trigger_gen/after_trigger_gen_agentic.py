@@ -1,6 +1,6 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai, gpt_6_luna_openai
+from llms import gpt_4o_mini_openai, gpt_6_luna_openai, local_GEMMA
 from src.utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
 from src.constants import TEXTS
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

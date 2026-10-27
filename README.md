@@ -58,7 +58,7 @@ python -m venv venv2
 After setting up the virtual environment, you must install the packages using:
 
 ```
-npm install dotenv express cors multer axios react-markdown remark-gfm concurrently
+npm install dotenv cors multer axios react-markdown remark-gfm 
 ``` 
 
 ### Running the Front-end
