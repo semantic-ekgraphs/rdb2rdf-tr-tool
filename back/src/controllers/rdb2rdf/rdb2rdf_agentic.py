@@ -1,7 +1,7 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai
-# from knowledge import object_preserving_definition_knowledge_source
+from src.llms import gpt_4o_mini_openai
+# from src.knowledge import object_preserving_definition_knowledge_source
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 agent_vania_r2rml_to_tr = Agent(
@@ -595,7 +595,7 @@ transformation_rules_team = Crew(
 ### ==========================================
 ### Q&A TRANSFORMATION RULES PARTTERNS TEAM
 ### ==========================================
-# from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+# from src.knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 
 tr_patterns_response_agent = Agent( 
    role="Senior analyst specializing in transformation rule patterns for RDB2RDF views.", 

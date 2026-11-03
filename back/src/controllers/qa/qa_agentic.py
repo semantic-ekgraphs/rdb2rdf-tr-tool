@@ -1,6 +1,6 @@
 from crewai import Agent, Task, Crew
 from .qa_knowledge import person_knowledge_source_str
-from llms import gpt_4o_mini_openai
+from src.llms import gpt_4o_mini_openai
 
 people_relationship_response_agent = Agent( 
    role="Senior Analyst specialized in persons and relationships.", 
@@ -45,7 +45,7 @@ team_answer_questions_about_people_using_ks = Crew(
 ### ==========================================
 ### Q&A TRANSFORMATION RULES PARTTERNS TEAM
 ### ==========================================
-# from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+# from src.knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 
 tr_patterns_response_agent = Agent( 
    role="Senior analyst specializing in transformation rule patterns for RDB2RDF views.", 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai
-from knowledge.sources_of_knowledge  import transformation_rules_formalism
+from src.llms import gpt_4o_mini_openai
+from src.knowledge.sources_of_knowledge  import transformation_rules_formalism
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 

@@ -10,9 +10,9 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from crewai import Agent, Task, Crew, Process
 from crewai.tools import tool
-from llms import llama3_groq, gpt_oss_20b_groq, gpt_oss_120b_groq
-from llms import llama_3b_Ollama
-from llms import gpt_4o_mini_openai
+from src.llms import llama3_groq, gpt_oss_20b_groq, gpt_oss_120b_groq
+from src.llms import llama_3b_Ollama
+from src.llms import gpt_4o_mini_openai
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 agent_vania_r2rml_to_tr = Agent(

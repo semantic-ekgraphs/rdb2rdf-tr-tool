@@ -1,6 +1,6 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_6_luna_openai, local_GEMMA
+from src.llms import gpt_6_luna_openai, local_GEMMA
 from models.stage1 import MetadataParsing
 from src.utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
 from src.constants import TEXTS
@@ -12,8 +12,8 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ### ==========================================
 ### AGENTS | STAGE 1
 ### ==========================================
-from knowledge.sources_of_knowledge import instruction_consult_knowledge_source
-from knowledge.sources_of_knowledge import knowledge_stage_1
+from src.knowledge.sources_of_knowledge import instruction_consult_knowledge_source
+from src.knowledge.sources_of_knowledge import knowledge_stage_1
 
 transformation_rule_generation_agent = Agent(
    role="Principal Knowledge Engineer and Formal Semantic Web Architect and Senior analyst specializing in transformation rule patterns for RDB2RDF views.", 
@@ -116,7 +116,7 @@ task_entity_preservation_analysis = Task(
    description=(
 "Verifies whether the R2RML mappings, in <Extracted Metadada> input, satisfy the assumptions required by "
 "the formal entity-preserving specification. "
-"In particular, it identifies:"
+"For each relation it identifies:"
 f"{get_prompt_of_a_pydantic_model(EntityPreservationRow)}\n\n"
 "Important Requirements:\n"
 "- If the relational schema does not present 'PRIMARY KEY', consider the data type SERIAL as the primary key and UUID as the unique key.\n"
@@ -133,6 +133,26 @@ f"{get_prompt_of_a_pydantic_model(EntityPreservationRow)}\n\n"
 )
 
 
+task_entity_preservation_analysis_hitl = Task(
+   description=(
+"Verifies whether the R2RML mappings, in <Extracted Metadada> input, satisfy the assumptions required by "
+"the formal entity-preserving specification. "
+"For each relation it identifies:"
+f"{get_prompt_of_a_pydantic_model(EntityPreservationRow)}\n\n"
+"Important Requirements:\n"
+"- If the relational schema does not present 'PRIMARY KEY', consider the data type SERIAL as the primary key and UUID as the unique key.\n"
+"Inputs: "
+"<Extracted Metadada>{inputs.extracted_metadata}</Extracted Metadada>\n"
+),
+   expected_output=(
+      "Entity-preservation report with the title 'Entity-Preservation Analisys', besides the following columns:"
+      f"{get_prompt_of_columns(EntityPreservationRow)}"
+      ""
+   ),
+   output_file=f"{TEXTS.GENERATED_DATA_FOLDER}/stage1/entity_preservation_analysis_{date_now}.md",
+   agent=transformation_rule_generation_agent,
+   human_input=True
+)
 
 
 
@@ -288,7 +308,7 @@ transformation_rules_team_task_2 = Crew(
       transformation_rule_generation_agent
    ],
    tasks=[
-      task_entity_preservation_analysis
+      task_entity_preservation_analysis_hitl
    ],
    process='sequential'
 )

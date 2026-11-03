@@ -2,7 +2,7 @@ import os
 from crewai import Crew, Agent, Task, LLM
 from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
 from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
-from llms import llama3_groq, gpt_oss_20b_groq, gpt_oss_120b_groq
+from src.llms import llama3_groq, gpt_oss_20b_groq, gpt_oss_120b_groq
 from dotenv import load_dotenv
 load_dotenv()
 _GROQ_API_KEY   = os.getenv("GROQ_API_KEY")

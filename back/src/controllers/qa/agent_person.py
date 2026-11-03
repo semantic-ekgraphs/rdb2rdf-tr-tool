@@ -1,7 +1,7 @@
 # from crewai_tools import FileReadTool
 # from pathlib import Path
 # from crewai import Agent, Task
-# from llms import llama3_groq, gpt_4o_mini_openai
+# from src.llms import llama3_groq, gpt_4o_mini_openai
 
 # # Inicialização da ferramenta
 # kg_persons = Path(__file__).parent / "../../knowledge/renato-data.txt"

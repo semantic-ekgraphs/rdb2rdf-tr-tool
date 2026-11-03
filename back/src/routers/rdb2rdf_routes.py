@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from controllers.rdb2rdf import rdb2rdf_controller
-from controllers.rdb2rdf import entity_preserving
-from constants import TAG_RDB2RDF
+from src.controllers.rdb2rdf import rdb2rdf_controller
+from src.controllers.rdb2rdf import entity_preserving
+from src.constants import TAG_RDB2RDF
 
 router  = APIRouter(
    prefix="/rdb2rdf",

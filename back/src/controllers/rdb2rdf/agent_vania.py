@@ -1,6 +1,6 @@
 from crewai import Agent, Task
 from typing import List
-from llms import llama3_groq
+from src.llms import llama3_groq
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from crewai import Agent, Task, Crew, Process

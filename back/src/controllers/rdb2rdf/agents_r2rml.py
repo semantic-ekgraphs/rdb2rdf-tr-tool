@@ -10,7 +10,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from crewai import Agent, Task, Crew, Process
 from crewai.tools import tool
-from llms import llama3_groq, gpt_oss_20b_groq, gpt_oss_120b_groq
+from src.llms import llama3_groq, gpt_oss_20b_groq, gpt_oss_120b_groq
 date_now                         = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 #################################

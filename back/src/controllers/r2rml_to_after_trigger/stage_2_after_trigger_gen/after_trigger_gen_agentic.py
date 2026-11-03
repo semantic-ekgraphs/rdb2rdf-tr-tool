@@ -1,18 +1,18 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai, gpt_6_luna_openai, local_GEMMA
+from src.llms import gpt_4o_mini_openai, gpt_6_luna_openai, local_GEMMA
 from src.utils import get_prompt_of_a_pydantic_model, get_prompt_of_columns
 from src.constants import TEXTS
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-# from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
-# from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
-# from knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
-# from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
-# from knowledge.sources_of_knowledge import knowledge_source_of_algorithm_2
-# from knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
-from knowledge.sources_of_knowledge import knowledge_stage_2
-from knowledge.sources_of_knowledge import instruction_consult_knowledge_source
+# from src.knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification 
+# from src.knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+# from src.knowledge.sources_of_knowledge import knowledge_source_of_maintanance_queue_infrastructure
+# from src.knowledge.sources_of_knowledge import knowledge_source_of_algorithm_1
+# from src.knowledge.sources_of_knowledge import knowledge_source_of_algorithm_2
+# from src.knowledge.sources_of_knowledge import knowledge_of_rdb2rdf_views
+from src.knowledge.sources_of_knowledge import knowledge_stage_2
+from src.knowledge.sources_of_knowledge import instruction_consult_knowledge_source
 
 # Estou seguindo o documento do artigo: https://docs.google.com/document/d/1FU7M8qcHQhQvPcYbidvnTS28UfEBj5H_lqayQ_pAc-s/edit?tab=t.0
 

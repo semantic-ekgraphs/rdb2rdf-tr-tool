@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.r2rml_to_after_trigger.stage_3_triiger_validation_repair import trigger_validation_repair_controller
-from constants import TAG_TRIGGER_VALIDATION_AND_REPAIR
+from src.constants import TAG_TRIGGER_VALIDATION_AND_REPAIR
 
 router  = APIRouter(
    prefix="/trigger-validation",

@@ -1,10 +1,10 @@
 import os
 from fastapi import HTTPException, status
 import requests
-from constants import Prefixies_SPARQL, HeadersOnRequests
+from src.constants import Prefixies_SPARQL, HeadersOnRequests
 from dotenv import load_dotenv
-from constants import HeadersOnRequests
-from constants import TXT_TEN_DASHES
+from src.constants import HeadersOnRequests
+from src.constants import TXT_TEN_DASHES
 from config.endpoint import Endpoint
 load_dotenv()
 

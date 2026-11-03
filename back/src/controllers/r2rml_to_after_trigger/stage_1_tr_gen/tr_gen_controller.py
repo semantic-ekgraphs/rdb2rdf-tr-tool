@@ -6,6 +6,7 @@ from src.utils import get_path_of_file, get_path_of_generated_file, get_path_of_
 from .tr_gen_agentic import transformation_rules_team_task_1
 from .tr_gen_agentic import transformation_rules_team_task_2, transformation_rules_team_task_3
 from src.constants import TEXTS
+from .hitl_fixed import ReviewFlow
 
 date_now    = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 console     = lambda x: console_log("RDB2RDF CONTROLLER", x)
@@ -57,7 +58,7 @@ async def extract_metadata(file1:str,file2:str) -> str:
 ### TASK 2 | STAGE 1
 # Pelo que entendi, 1.1 e 1.2 são complementares.
 ### ==========================================
-async def analyzes_entity_preservation():
+async def analyzes_entity_preservation(data):
    print(console('analyzes_entity_preservation_of_R2RML_mappings()'))
    
    extracted_metadata_file    = get_path_of_generated_file("stage1/extracted_metadata.md")
@@ -67,8 +68,14 @@ async def analyzes_entity_preservation():
    inputs = {
       'extracted_metadata': extracted_metadata_content,
    }
+   teste = {
+      'inputs': {
+         'extracted_metadata': extracted_metadata_content,
+      },
+      'humanInputWebhookUrl': 'https://example.com'
+   }
 
-   answer = transformation_rules_team_task_2.kickoff(inputs)
+   answer = transformation_rules_team_task_2.kickoff(inputs=teste)
    
    if answer is not None:
       return answer
@@ -77,6 +84,18 @@ async def analyzes_entity_preservation():
 
 
 
+async def human_in_the_loop(data):
+   print(console('human_in_the_loop()'))
+   flow = ReviewFlow()
+   flow = ReviewFlow()
+   flow.plot("my_flow_plot")
+   final_output = flow.kickoff()
+
+   print("---- Final Output ----")
+   print(f"Final State: {flow.state}")
+   answer = final_output
+   
+  
 ### ==========================================
 ### TASK 3 | STAGE 1
 ### ==========================================

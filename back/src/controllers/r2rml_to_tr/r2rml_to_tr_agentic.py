@@ -1,10 +1,10 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai
-# from knowledge.sources_of_knowledge  import transformation_rules_formalism
-# from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns
-from knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification
-from knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
+from src.llms import gpt_4o_mini_openai
+# from src.knowledge.sources_of_knowledge  import transformation_rules_formalism
+# from src.knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns
+from src.knowledge.sources_of_knowledge import knowledge_of_formal_entity_preserving_specification
+from src.knowledge.sources_of_knowledge import knowledge_source_transformation_rule_patterns_v2
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 # from models.task_output import TriplesMapParsing, TriplesMapParsingList
 from .model import TriplesMapParsing

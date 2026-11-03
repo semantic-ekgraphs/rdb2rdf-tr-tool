@@ -1,6 +1,6 @@
 from datetime import datetime
 from crewai import Agent, Task, Crew
-from llms import gpt_4o_mini_openai
+from src.llms import gpt_4o_mini_openai
 from .rdb2rdf_agentic import agent_vania_r2rml_to_tr
 # from .rdb2rdf_knowledge import entity_preserving_definition_knowledge_source
 date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

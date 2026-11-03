@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from constants import TXT_TEN_DASHES
+from src.constants import TXT_TEN_DASHES
 load_dotenv()
 
 ENVIROMENT = os.getenv("DEPLOY")

@@ -1,0 +1,7 @@
+# Entity-Preservation Analisys
+
+The supplied input contains the placeholder `{inputs.extracted_metadata}`, not the extracted R2RML mappings or relational schema. Therefore, no TriplesMaps, relations, pivots, URI templates, or foreign-key paths can be identified or validated. The row below records that limitation rather than inventing mapping details.
+
+| triples_map_id | relation | pivot_relation | entity_preserving | uri_function | relational_path | issue | recommended_correction |
+|---|---|---|---|---|---|---|---|
+| N/A — no extracted metadata provided | N/A — no mapping or relation definitions provided | N/A — cannot identify a pivot relation | No - cannot verify; mappings and schema are absent | N/A — no subject-map template or column values provided | N/A — no schema or foreign keys provided | The required extracted metadata is missing, so entity identity, URI uniqueness, and relational paths cannot be assessed. | Provide the extracted R2RML mappings and relational schema, including primary keys, foreign keys, and column types. If a relation has no declared primary key, include its columns so SERIAL can be treated as a primary key and UUID as a unique key under the stated rule. |

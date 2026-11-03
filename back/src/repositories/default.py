@@ -4,7 +4,7 @@ from urllib.parse import unquote_plus
 import uuid
 import requests
 # from unidecode import unidecode
-from constants import Prefixies_SPARQL, NamedGraph, HeadersOnRequests
+from src.constants import Prefixies_SPARQL, NamedGraph, HeadersOnRequests
 # import Prefixies, NameSpaces as ns, Endpoint, EndpointDEV, Headers, Functions, NamedGraph
 # from commons import ENVIROMENT, TBOX_SAVED_QUERY, Metadata_Graph_Tbox as VSKG
 # from models import DataSource, MetaMashupModel, HighLevelMapping, DataProperty, AddGCLMashupModel, AssociaMetaEKGAoMetaMashupModel
@@ -12,8 +12,8 @@ from constants import Prefixies_SPARQL, NamedGraph, HeadersOnRequests
 # from sqlalchemy import create_engine, text
 # import pandas as pd
 from dotenv import load_dotenv
-from constants import HeadersOnRequests
-from constants import TXT_TEN_DASHES
+from src.constants import HeadersOnRequests
+from src.constants import TXT_TEN_DASHES
 from back.src.utils import delete_file_in_the_graphdb_server
 from config.endpoint import Endpoint
 # Carregando as variáveis de ambiente do arquivo .env

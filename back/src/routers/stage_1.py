@@ -3,8 +3,11 @@ from pathlib import Path
 import os
 import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from pydantic import BaseModel
 from ..controllers.r2rml_to_after_trigger.stage_1_tr_gen import tr_gen_controller
-from constants import TAG_R2RML_TO_TR
+from src.constants import TAG_R2RML_TO_TR
+
+# https://docs.copilotkit.ai/react-spa/crewai-crews/human-in-the-loop/flow
 
 router  = APIRouter(
    prefix="/r2rml-to-tr",
@@ -32,6 +35,11 @@ async def generates_transformation_rules():
    return await tr_gen_controller.generates_transformation_rules()
 
 
+
+@router.get("/hitl/", 
+            description="Human-in-the-loop.")
+async def Human_in_the_loop():  
+   return await tr_gen_controller.analyzes_entity_preservation()
 
 TEMP_DIR = Path("../temp")
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -65,14 +73,29 @@ async def metadata_extraction(
 
 
 
-# @router.post("/entitiy-preservation-analysis/", 
-#             description="Route to analyzes entity-preservation from extracted metadata.")
-# async def analyzes_entity_preservation():  
-#    return await tr_gen_controller.analyzes_entity_preservation()
+@router.post("/entitiy-preservation-analysis/", 
+            description="Route to analyzes entity-preservation from extracted metadata.")
+async def analyzes_entity_preservation():  
+   return await tr_gen_controller.analyzes_entity_preservation()
 
 
+class Webhook(BaseModel):
+   humanInputWebhookUrl: str
+class Feedback(BaseModel): 
+   execution_id: str
+   task_id: str
+   human_feedback: str
+   is_approve: bool
+   taskWebhookUrl: str
+   stepWebhookUrl: str
+   crewWebhookUrl: str
+@router.post("/entitiy-preservation-analysis-hitl/", 
+            description="Route to analyzes entity-preservation from extracted metadata.")
+async def analyzes_entity_preservation_hitl(data:Webhook):  
+   return await tr_gen_controller.analyzes_entity_preservation(data)
 
-# @router.post("/tr-gen/", 
-#             description="Route to convert R2RML mapping to transformation r ules.")
-# async def generates_transformation_rules():  
-#    return await tr_gen_controller.generates_transformation_rules()
+
+@router.post("/tr-gen/", 
+            description="Route to convert R2RML mapping to transformation r ules.")
+async def generates_transformation_rules():  
+   return await tr_gen_controller.generates_transformation_rules()

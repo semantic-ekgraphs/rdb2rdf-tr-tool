@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.qa import qa_controller
-from constants import TAG_QA
+from src.constants import TAG_QA
 
 qa_router  = APIRouter(
    prefix="/qa",

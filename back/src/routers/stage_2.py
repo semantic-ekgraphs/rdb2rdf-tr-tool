@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.r2rml_to_after_trigger.stage_2_after_trigger_gen import after_trigger_gen_controller
-from constants import TAG_TR_TO_TRIGGER
+from src.constants import TAG_TR_TO_TRIGGER
 
 router  = APIRouter(
    prefix="/tr-to-after-trigger",
