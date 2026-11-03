@@ -18,11 +18,12 @@ date_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 async def plan_after_trigger() -> str:
    print(console('plan_after_trigger()'))
    
-   # generated_tr_file = get_path_of_generated_file("stage1/transformation_rules.md")
-   generated_tr_file = get_path_of_generated_file("stage1/validated_transformation_rules.md")
+   generated_tr_file = get_path_of_generated_file("stage1/transformation_rules.md")
+   validated_tr_file = get_path_of_generated_file("stage1/validated_transformation_rules.md")
    rdb_schema_file   = get_path_of_file_from_temp("a_schema.sql")
    
    generated_tr_content = read_txt_file(generated_tr_file)
+   validated_tr_content = read_txt_file(validated_tr_file)
    rdb_schema_content   = read_txt_file(rdb_schema_file)
 
    inputs = {
@@ -47,16 +48,19 @@ async def plan_after_trigger() -> str:
 # Essa task deveria ser divida em duas
 async def synthesizes_verifies_trigger() -> str:
    print(console('synthesizes_verifies_trigger()'))
-   
+
    generated_tr_file           = get_path_of_generated_file("stage1/transformation_rules.md")
+   extracted_metadata_file           = get_path_of_generated_file("stage1/extracted_metadata.md")  
    trigger_execution_plan_file = get_path_of_generated_file("stage2/trigger_execution_plan.md")
    
    generated_tr_content           = read_txt_file(generated_tr_file)
+   extracted_metadata_content = read_txt_file(extracted_metadata_file)
    trigger_execution_plan_content = read_txt_file(trigger_execution_plan_file)
 
    inputs = {
-      'trigger_execution_plan': trigger_execution_plan_content,
-      'transformation_rules':   generated_tr_content,
+      'trigger_execution_plan':           trigger_execution_plan_content,
+      'transformation_rules':             generated_tr_content,
+      'extracted_metadata':   extracted_metadata_content,
    }
 
    answer = after_trigger_gen_team_2.kickoff(inputs)
