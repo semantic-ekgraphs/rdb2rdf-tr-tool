@@ -1,12 +1,11 @@
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from .routers import qa, rdb2rdf_routes, stage_1, stage_2, stage_3
+from src.routers import stage_1, stage_2, stage_3, hitl_routes
 from src.constants import TAG_INDEX
 
-from ag_ui_crewai.endpoint import add_crewai_flow_fastapi_endpoint
-from src.hitl.hitl import HumanInTheLoopFlow
+# from ag_ui_crewai.endpoint import add_crewai_flow_fastapi_endpoint
+# from src.hitl.hitl import HumanInTheLoopFlow
 
 
 
@@ -17,12 +16,13 @@ def route_index():
 app.include_router(stage_1.router)
 app.include_router(stage_2.router)
 app.include_router(stage_3.router)
+app.include_router(hitl_routes.router)
 
-add_crewai_flow_fastapi_endpoint(
-	app=app,
-	flow=HumanInTheLoopFlow(),
-	path="/human_in_the_loop",
-)
+# add_crewai_flow_fastapi_endpoint(
+# 	app=app,
+# 	flow=HumanInTheLoopFlow(),
+# 	path="/human_in_the_loop",
+# )
 
 origins = [
 	"http://localhost:3002",

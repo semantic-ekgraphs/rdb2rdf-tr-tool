@@ -6,7 +6,7 @@ from src.utils import get_path_of_file, get_path_of_generated_file, get_path_of_
 from .tr_gen_agentic import transformation_rules_team_task_1
 from .tr_gen_agentic import transformation_rules_team_task_2, transformation_rules_team_task_3
 from src.constants import TEXTS
-from .hitl_fixed import ReviewFlow
+from ...flow.hitl_fixed import ReviewFlow
 
 date_now    = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 console     = lambda x: console_log("RDB2RDF CONTROLLER", x)
@@ -84,17 +84,19 @@ async def analyzes_entity_preservation(data):
 
 
 
-async def human_in_the_loop(data):
+async def human_in_the_loop():
    print(console('human_in_the_loop()'))
    flow = ReviewFlow()
-   flow = ReviewFlow()
-   flow.plot("my_flow_plot")
+   # flow.plot("my_flow_plot")
    final_output = flow.kickoff()
 
    print("---- Final Output ----")
-   print(f"Final State: {flow.state}")
-   answer = final_output
+   # print(f"Final State: {flow.state}")
+   return final_output
    
+
+
+
   
 ### ==========================================
 ### TASK 3 | STAGE 1

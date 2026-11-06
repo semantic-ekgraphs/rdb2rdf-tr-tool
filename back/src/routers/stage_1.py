@@ -36,10 +36,15 @@ async def generates_transformation_rules():
 
 
 
-@router.get("/hitl/", 
-            description="Human-in-the-loop.")
-async def Human_in_the_loop():  
-   return await tr_gen_controller.analyzes_entity_preservation()
+# @router.get("/hitl/", 
+#             description="Human-in-the-loop.")
+# async def Human_in_the_loop():  
+#    return await tr_gen_controller.human_in_the_loop()
+
+
+
+
+
 
 TEMP_DIR = Path("../temp")
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
